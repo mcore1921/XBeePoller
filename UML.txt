@@ -1,0 +1,95 @@
+Pics generated at www.planttext.com/planttext
+Text used to generate the art is below.
+
+---------------------------------------
+
+Basic class relationship:
+
+@startuml
+
+title Relationships - Class Diagram
+
+class main
+class XBeeConfigManager
+class MessageHandler
+class PortService
+class SQLConnector
+
+package SQL <<database>> {
+  class db
+}
+
+main *-- PortService
+main *-- MessageHandler
+XBeeConfigManager -down-* MessageHandler
+MessageHandler *-- SQLConnector
+SQLConnector *-- SQL
+
+Hide members 
+Hide main circle
+Hide db circle
+
+@enduml
+
+---------------------------------------
+
+I/O Sequence Diagram:
+
+@startuml
+
+title "I/O from XBee into SQL"
+
+actor XBeePort
+
+Box "UART Thread"
+  participant PortService
+  participant main
+  participant MessageFactory
+end box
+
+XBeePort --> PortService : UART
+PortService --> main : inputQueue
+main --> MessageFactory
+main <-- MessageFactory : IOSample 
+main --> MessageHandler : IOSample over inputQueue
+MessageHandler --> SQLConnector
+database SQL
+SQLConnector --> SQL
+
+@enduml
+
+---------------------------------------
+
+Configuration Sequence Diagram:
+@startuml
+
+title "XBee Configuration Management"
+
+actor XBeePort
+
+Box "UART Thread"
+  participant PortService
+  participant main as main1
+  participant MessageFactory
+end box
+participant main as main2
+
+== Incoming Messages ==
+XBeePort --> PortService : UART
+PortService --> main1 
+main1 --> MessageFactory
+main1 <-- MessageFactory : (Message*)
+main1 --> main2 : inputQueue
+main2 --> MessageHandler
+MessageHandler --> XBeeConfigManager
+main1 <-- XBeeConfigManager : sendQueue
+XBeePort <-- main1 : write to port
+
+== Asynchronous Queries ==
+
+main2 --> XBeeConfigManager : heartbeat
+main1 <-- XBeeConfigManager : sendQueue
+XBeePort <-- main1
+
+@enduml
+

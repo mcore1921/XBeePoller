@@ -1,0 +1,91 @@
+
+
+FROM SCRATCH:
+A) put raspbian on the sdcard.  (all this is tested with 
+   2015-02-16-raspbian-wheezy)
+B) Use the standard rpi-config that comes up on first boot to: 
+ 1) Expand filesystem
+ 2) Stay on command line default boot
+ 3) Set locale to en_US.UTF-8  (space to de-select en_GB, space to select 
+    en_US.UTF-8, then enter)
+    Internationalisation Options - Change Locale
+ 4) Set the timezone
+    Internationalisation Options - Change Timezone
+ 5) Set the keyboard
+    Internationalisation Options - Change Keyboard Layout
+    Pick something like "Generic 101-key PC"
+    Pick "Other"
+    Drop to "English (US)"
+    Then pick "English (US)" again
+    Pick defaults for the rest
+ 6) Advanced options - SSH - enable
+ 7) Advanced options - Serial - disable 
+ 8) Finish, reboot
+C) Set up the wifi 
+ 1) Find the wifi network details:
+    > sudo iwlist wlan0 scan
+    Look for the SSID of your router - it'll look like:
+    ESSID:"YOURLAN"
+ 2) Edit the wpa_supplicant.conf file
+    > sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+ 3) Go to the bottom of the file and add, then save and exit:
+network={
+    ssid="The_ESSID_from_earlier"
+    psk="Your_wifi_password"
+}
+ 4) It should just work after a second or two.  If not, drop and 
+    rais the lan with:
+    > sudo ifdown wlan0
+    > sudo ifup wlan0
+ 5) You can tell if it works with the following.  It will show an IP
+    address if it works.
+    > ifconfig wlan0
+ 6) Turn off power saving on the wifi dongle. 
+    > sudo nano /etc/modprobe.d/8192cu.conf
+    Make it say this (including a newline at the end)
+#Disable power management
+options 8192cu rtw_power_mgnt=0 rtw_enusbss=0
+
+D) Set a static IP
+ 1) Edit /etc/network/interfaces
+    > sudo nano /etc/network/interfaces
+ 2) Edit the last line from:
+iface default inet dhcp
+    to
+iface default inet static
+ 3) Add the following to the bottom (replacing the X's, of course):
+address X.X.X.X
+netmask 255.255.255.0
+gateway X.X.X.X
+ 4) reboot
+    > sudo reboot
+E) From here on out, you can ditch the keyboard / monitor and ssh in
+   to do the rest of the configuration
+F) Make yourself a new user / pass / etc
+   > sudo useradd USERNAME
+   > sudo passwd USERNAME
+   > sudo mkdir /home/USERNAME
+   > sudo chown USERAME.USERNAME /home/USERNAME
+   > sudo usermod -a -G dialout USERNAME
+   > sudo usermod -a -G gpio USERNAME
+G) Add yourself to sudoers
+   > sudo nano /etc/sudoers
+   Make a new line at the end that matches the "pi" line, but sub 
+   out "pi" for your USERNAME
+H) Set up nptd
+ 1) sudo nano /etc/ntp.conf
+    Change the following line:
+#server ntp.your-provide.example
+    to
+server ntp.timeserver.com
+ 2) Use the following to instantly set the time
+   > sudo nano -qg
+I) Load the necessary packages. Use the following:
+sudo apt-get update
+sudo apt-get install libmysql++-dev
+sudo apt-get install libboost-dev
+sudo apt-get install libboost-program-options-dev
+sudo apt-get install cmake
+sudo apt-get install libcurl4-openssl-dev
+sudo apt-get install mysql-server  (rpi root password)
+J) TODO: Add webserver setup here

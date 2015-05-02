@@ -1,0 +1,146 @@
+Short Answer at the top, lots of notes down below.
+
+---------------------------
+
+To configure the controller:
+X-CTU application, some USB programmer thing
+Modem Type XB24-ZB
+Modem FW version 21A7
+Zigbee Coordinator API
+Set the PAN ID
+Adjust SP (specified in hex, 10ms units) and SN (multiplier for SP) so that
+  it exceeds the wake delay on the remotes.
+A 12 minute delay is good, which would be SP=0x7D0 (2000), SN=0x24 (36)
+  (20sec x 36 = 720, 12 minutes)
+
+---------------------------
+
+To configure the remote stations:
+Be sure to replace the PANID with your desired ID!
+
+ATID<PANID>
+ATDH0
+ATDL0
+ATD02
+ATD12
+ATSM4
+ATSP9C4
+ATSN6
+ATIRFA
+ATST1388
+ATWR
+
+If it isn't connecting in time, try doubling the alive time per poll
+ATST2710  (though it seems the SP/SN on the coordinator is better answer...)
+
+---------------------------
+
+To configure a router XBee to be the digital I/O sampler
+for this application:
+
+In all instances below, replace <id> with the PAN ID#
+
+This sequence sets up the device to send periodic samples
+to the coordinator (ADTDH0/ATDL0). Upon waking from sleep /
+powering up, it will attempt to locate the coordinator (ATJV1).
+It will then send samples at a rate of one per 0x03E8 (1000) 
+milliseconds. 
+
+ATID<id>
+ATDH0
+ATDL0
+ATJV1
+ATD02
+ATD12
+ATIR3E8
+ATWR
+
+
+This sequence sets up the device to send periodic samples
+to the coordinator (ADTDH0/ATDL0). Upon waking from sleep /
+powering up, it will attempt to locate the coordinator (ATJV1).
+It will then wake every 5 seconds (ATSP1F4).  Every wake it will
+wait for 65ms (ATWH41), then do I/O samples at a rate of one per 
+50ms (ATIR32) until the ST timer expires at 320ms (ATST140).
+Also set SN and SO to defaults (ATSN1, ATSO0)
+
+ATID<id>
+ATDH0
+ATDL0
+ATJV1
+ATD02
+ATD12
+ATSM4
+ATSP1F4
+ATWH41
+ATIR32
+ATST140
+ATSN1
+ATSO0
+ATWR
+
+
+This sequence is similar to above, with different parameters.
+Sleep period 5 seconds (ATSP1F4).  On every wake, 
+wait is still 65ms (ATWH41), then I/O at a rate of one per 
+5ms (ATIR5) until the ST timer expires at 260ms (ATST57).
+Also set SN and SO to defaults (ATSN1, ATSO0)
+
+ATID<id>
+ATDH0
+ATDL0
+ATJV1
+ATD02
+ATD12
+ATSM4
+ATSP1F4
+ATWH41
+ATIR32
+ATST104
+fATSN1
+ATSO0
+ATWR
+
+
+Now a trial for use in the house project.
+fSleep period is 2:30 (150 sec).  This is achieved with 6 25-sec
+periods (ATSP9C4, ATSN6).  Readings are then sent back at 4hz
+(ATIRFA).  Then have the device stay awake for 5 seconds before
+returning to sleep (ATST1388) - but this is the default, so we 
+will just leave it.  Note ATJV is returned to 0 - we 
+always want to run on the specified ID.
+
+ATID<id>
+ATDH0
+ATDL0
+ATD02
+ATD12
+ATSM4
+ATSP9C4
+ATSN6
+ATIRFA
+ATST1388
+ATWR
+
+
+
+0x32 = 50ms
+0x3C = 60ms
+0x41 = 65ms
+0x1F4 = 500 (note ATSP implicitly adds 10x)
+0x140 = 320 (65 for WH, 250 for 5 samples, 5 to grow on)
+0x3E8 = 1000
+
+Here is the current configuration for the house project:
+ATID27
+ATDH0
+ATDL0
+ATD02
+ATD12
+ATSM4
+ATSP9C4
+ATSN6
+ATIRFA
+ATST1388
+ATWR
+

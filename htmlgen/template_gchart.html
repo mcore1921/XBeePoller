@@ -1,0 +1,57 @@
+<html>
+ <head>
+ <style>
+ table,th,td
+ {
+    border:1px solid black;
+    border-collapse:collapse;
+ }
+ </style>
+    <meta http-equiv="refresh" content="300">
+    <meta http-equiv="expires" content="-1">
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+  ["Time", $foreachcol
+"$colname"$delimeter(", ")$endforeachcol
+],
+$foreachrow
+  ["$rowtimedash", $foreachcol
+$rowcolval$delimeter(", ")$endforeachcol
+],
+$endforeachrow
+        ]);
+
+        var options = {
+          title: 'Temperature Readings (in Farenheit) - updated $humandatetime'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+Current Temperatures ($lastdatatime)<br>
+<table style="width:400px">
+<tr>
+$foreachcol
+<th>$colname</th>
+$endforeachcol
+</tr>
+<tr>
+$foreachcol
+<td>$curcolval</td>
+$endforeachcol
+</tr>
+</table>
+    <a href="./current.html">Today</a>
+    <a href="./current_week.html">This Week</a>
+    <a href="./current_month.html">This Month</a>
+  </body>
+</html>
+

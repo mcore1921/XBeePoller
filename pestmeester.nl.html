@@ -1,0 +1,2565 @@
+<!DOCTYPE>
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8">
+<title>How to set up a secure Raspberry Pi web server, mail server and Owncloud installation</title>
+<meta content="Pestmeester, RaspberryPi, Raspberry, Pi, Owncloud, External, USB Drive, secure, web server, mail server" name="keywords" />
+<meta content="A guide how to set up a secure Raspberry Pi web server, mail server and Owncloud installation in a subdirectory on an external USB Drive." name="description" />
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-59852358-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</head>
+<body>
+<div class="main">
+
+<section id="zero" class="container" data-speed="10" data-type="background">
+<article class="headertitle">
+<h1>How to set up a secure Raspberry Pi web server, mail server and Owncloud installation</h1>
+</article>
+</section>
+
+<section id="fifth" class="container">
+<article class="movable">
+
+<p><a href="https://twitter.com/Pestmeester" alt="Pestmeester">@Pestmeester</a><br />February 18th 2015<br /><a href="index.html#17.0">View changelog</a></p>
+	</article>
+</section>
+
+<section id="fourth" class="container"> 
+<article class="story">
+<h2>Table of contents</h2>
+<ul>
+	<li><a href="index.html#1.0">Introduction</a></li>
+	<ol>
+		<li><a href="index.html#1.1">A fair warning</a></li>
+	</ol>
+	<li><a href="index.html#2.0">Getting started</a></li>
+	<li><a href="index.html#3.0">Installing an OS on your Raspberry Pi</a></li>
+	<ol>
+		<li><a href="index.html#3.1">Download</a></li>
+		<li><a href="index.html#3.2">Format your Micro SD-CARD</a></li>
+		<li><a href="index.html#3.3">Drag and drop NOOBS files</a></li>
+		<li><a href="index.html#3.4">First boot</a></li>
+		<li><a href="index.html#3.5">Raspi-config</a></li>
+		<li><a href="index.html#3.6">Change the Pi password</a></li>
+		<li><a href="index.html#3.7">Disable "Boot to Desktop"</a></li>
+		<li><a href="index.html#3.8">Update your Locale settings</a></li>
+		<li><a href="index.html#3.9">Set your Hostname (Advanced > Hostname)</a></li>
+		<li><a href="index.html#3.10">Set the Memory Split (Advanced > Memory Split)</a></li>
+		<li><a href="index.html#3.11">Ensure SSH is enabled (Advanced > SSH)</a></li>
+		<li><a href="index.html#3.12">Commit the changes and reboot</a></li>
+	</ol>
+	<li><a href="index.html#4.0">Initial configuration</a></li>
+	<ol>
+		<li><a href="index.html#4.1">Set up Raspberry Pi</a></li>
+		<li><a href="index.html#4.2">Creating a new user</a></li>
+		<li><a href="index.html#4.3">Deleting the default 'pi' user</a></li>
+		<li><a href="index.html#4.4">Set up a fixed IP address for your Pi</a></li>
+		<li><a href="index.html#4.5">Going headless</a></li>
+		<li><a href="index.html#4.6">Updating the operating system and software</a></li>
+	</ol>
+	<li><a href="index.html#5.0">Setting up your USB Drive</a></li>
+	<ol>
+		<li><a href="index.html#5.1">Create the partition</a></li>
+		<li><a href="index.html#5.2">Mounting the USB drive</a></li>
+	</ol>
+	<li><a href="index.html#6.0">Securing your Pi</a></li>
+	<ol>
+		<li><a href="index.html#6.1">Disabling SSH Password Authentication and Root Login</a></li>
+		<li><a href="index.html#6.2">Creating a Firewall</a></li>
+		<li><a href="index.html#6.3">Installing and Configuring Fail2Ban</a></li>
+	</ol>
+	<li><a href="index.html#7.0">Install web server</a></li>
+	<ol>
+		<li><a href="index.html#7.1">Setting up PHP</a></li>
+		<li><a href="index.html#7.2">Securing MySQL</a></li>
+	</ol>
+	<li><a href="index.html#8.0">Setting up your first website</a></li>
+	<ol>
+		<li><a href="index.html#8.1">Setting up the mysite.local address</a></li>
+		<li><a href="index.html#8.2">Create the directory for your website's files</a></li>
+		<li><a href="index.html#8.3">Configure nginx to serve the website</a></li>
+		<li><a href="index.html#8.4">Configure nginx to use PHP</a></li>
+		<li><a href="index.html#8.5">Testing your PHP configuration</a></li>
+	</ol>
+	<li><a href="index.html#9.0">Accessing your site via a real domain</a></li>
+	<ol>
+		<li><a href="index.html#9.1">Setting up your domains A-record</a></li>
+		<li><a href="index.html#9.2">Setting up your Router</a></li>
+	</ol>
+	<li><a href="index.html#10.0">Installing SSL Certificates</a></li>
+	<ol>
+		<li><a href="index.html#10.1">Generating CSR on Nginx</a></li>
+		<li><a href="index.html#10.2">Apply for that certificate</a></li>
+		<li><a href="index.html#10.3">Installing a certificate on Nginx</a></li>
+		<li><a href="index.html#10.4">Combine all the certificates into a single file</a></li>
+		<li><a href="index.html#10.5">Adding HTTPS support in Nginx VirtualHost file</a></li>
+	</ol>
+	<li><a href="index.html#11.0">Setting up Email with Postfix, Dovecot, and MySQL</a></li>
+	<ol>
+		<li><a href="index.html#11.1">Configuring DNS</a></li>
+		<li><a href="index.html#11.2">Installing Packages</a></li>
+		<li><a href="index.html#11.2">Installing PHPMyAdmin</a></li>
+		<li><a href="index.html#11.3">MySQL</a></li>
+		<li><a href="index.html#11.4">Creating the Database</a></li>
+		<li><a href="index.html#11.5">Adding Data to the Database</a></li>
+		<li><a href="index.html#11.6">Postfix</a></li>
+		<li><a href="index.html#11.7">Dovecot</a></li>
+	</ol>
+	<li><a href="index.html#12.0">Set up Owncloud in a subdirectory of a domain on Raspberry Pi</a></li>
+	<ol>
+		<li><a href="index.html#12.1">I repeat: My installation is for Owncloud as subdirectory of our previous setup website</a></li>
+		<li><a href="index.html#12.2">Install a few more packages</a></li>
+		<li><a href="index.html#12.3">Configuring php</a></li>
+		<li><a href="index.html#12.4">Review and change the Nginx VirtualHost file</a></li>
+		<li><a href="index.html#12.5">Install ownCloud (version 8.0.0 used here)</a></li>
+		<li><a href="index.html#12.6">If the Owncloud installation goes wrong</a></li>
+	</ol>
+	<li><a href="index.html#13.0">Some more security!</a></li>
+	<li><a href="index.html#14.0">Test server and email security</a></li>
+	<li><a href="index.html#15.0">What else I need to do?</a></li>
+	<li><a href="index.html#16.0">Source material</a></li>
+	<li><a href="index.html#17.0">Changelog</a></li>
+</ul>
+	</article>
+</section>
+
+<section id="second" class="container">
+<article class="movable">
+
+<h2 id="1.0" name="1.0">Introduction</h2>
+
+<p>As soon as I posted a picture of my routers, switch, USB Drive and most important of all my Raspberry Pi 2 B, people asked if I wanted to write it all down in a guide. Of course I didn't do this by myself. I made use of several guides myself. I combined bits and pieces until I got what I was looking for. This guide is a step-by-step compilation of all those parts I used. This is how I made my secure Raspberry Pi Webserver, TLS/SSL email server and https secured Owncloud hosting in one. This very website you're viewing is actually served from the Raspberry Pi this guide is all about.</p>
+
+<h3 id="1.1" name="1.1">A fair warning</h3>
+<p>This guide is a work in progress. I had to write down these steps fast. For my own future personal reference and to help those who are interested in the right direction. I will test this guide myself this weekend. I just ordered a 2nd Pi and I'm looking forward to walk through this guide and check if everything works as intended: without errors. If I encounter mistakes, inconsistency, find silly duplicate or obsolete code, I'll edit this guide accordingly.</p>
+
+<p>Also, I am no server expert. I just like to tinfoil about cloud based personal data and experiment with creating self-hosted stuff in my spare time. I am sure there are people who can do this a lot better than I. But hey, it works! And security test results look great.</p>
+
+<img class="center" src="img/qualysssllabs-pestmeester.png" alt="Qualys SSL Labs" alt="Qualys SSL Labs">
+
+<p>Please consider this a first draft. Experiment with it accordingly.</p>
+
+<p>Enjoy!</p>
+
+</article>
+</section>
+
+
+
+<section id="third" class="container"> 
+<article class="work">
+
+<h2 id="2.0" name="2.0">Getting started</h2>
+
+<p>I used:</p>
+<ul>
+	<li>Raspberry Pi 2 B, which I bought here: <a href="https://www.sossolutions.nl/9324189-raspberry-pi-type-b-versie-20-0001.html" alt="SOS Solutions">SOS Solutions</a></li>
+	<li>Class 10, micro SD card</li>
+	<li>Micro SD adapter to be able to put the micro SD in my MacBook</li>
+	<li>HDMI Cable</li>
+	<li>Ethernet Cable</li>
+	<li>External USB Drive, with its own power. I use a WD My Book 2TB like <a href="http://www.amazon.com/Book-External-Drive-Storage-Backup/dp/B0041OSQBG" alt="Amazon">this</a>.</li>
+	<li>A fixed IP address from my ISP (XS4All in The Netherlands supports this)</li>
+	<li>Domainname I control</li>
+	<li>One Comodo PositiveSSL certificate (<a href="https://www.namecheap.com/security/ssl-certificates/comodo/positivessl.aspx?aff=82346" alt="Namecheap, Comodo PositiveSSL">that's only $9 a year at Namecheap.com</a>)
+</ul>
+<h2 id="3.0" name="3.0">Installing an OS on your Raspberry Pi</h2>
+
+<p>Raspberry Pi has some <a href="http://www.raspberrypi.org/help/noobs-setup/" alt="NOOBS setup">excellent guides</a> for the initial installation of an operating system on your Raspberry Pi. These are the parts I used.</p>
+
+<h3 id="3.1" name="3.1">Download</h3>
+
+<p>Using a computer with an SD card reader, visit the <a href="http://www.raspberrypi.org/downloads/" alt="Download NOOBS setup">Downloads page</a>.</p>
+
+<p>Click on the Download ZIP button under 'NOOBS (offline and network install)', and select a folder to save it to.</p>
+
+<p>Extract the files from the zip.</p>
+
+<h3 id="3.2" name="3.2">Format your Micro SD-CARD</h3>
+
+<p>It is best to format your SD card before copying the NOOBS files onto it. To do this:</p>
+
+<p>Visit the <a href="http://www.sdcard.org/" alt="SD Association">SD Association's website</a> and download <a href="https://www.sdcard.org/downloads/formatter_4/" alt="SD Formatter 4.0">SD Formatter 4.0</a> for either Windows or Mac.</p>
+
+<p>Follow the instructions to install the software.</p>
+
+<p>Insert your SD card into the computer or laptop's SD card reader and make a note of the drive letter allocated to it, e.g. G:/</p>
+
+<p>In SD Formatter, select the drive letter for your SD card and format it.</p>
+
+<h3 id="3.3" name="3.3">Drag and drop NOOBS files</h3>
+
+<p>Once your SD card has been formatted, drag all the files in the extracted NOOBS folder and drop them onto the SD card drive.</p>
+
+<p>The necessary files will then be transferred to your SD card.</p>
+
+<p>When this process has finished, safely remove the SD card and insert it into your Raspberry Pi.</p>
+
+<h3 id="3.4" name="3.4">First boot</h3>
+
+<p>Plug in your keyboard, mouse and monitor cables (I connected the Pi to my TV).</p>
+
+<p>Now plug in the USB power cable to your Pi.</p>
+
+<p>Your Raspberry Pi will boot, and a window will appear with a list of different operating systems that you can install. We recommend that you use Raspbian - tick the box next to Raspbian and click on Install.</p>
+
+<p>Raspbian will then run through its installation process. Note this can take a while.</p>
+
+<p>When the install process has completed, the Raspberry Pi configuration menu (raspi-config) will load.</p>
+
+<h3 id="3.5" name="3.5">Raspi-config</h3>
+
+<p>The following part comes from Matt Wilcox' guide I use later on. This specific part from his guide I will use right now. I changed the following settings in raspi-config. If raspi-config isn't open yet, type:</p>
+
+<pre>sudo raspi-config</pre>
+
+<p>Do the following:</p>
+
+	<h3 id="3.6" name="3.6">Change the Pi password</h3>
+		<p>We'll be deleting the default "pi" user account later (for security) but right now, if you were connected to the internet your Pi would be susceptible to someone SSHing into it - because every Pi has the same default password. Better to change it now, before you're connected, just in case.</p>
+	<h3 id="3.7" name="3.7">Disable "Boot to Desktop"</h3>
+		<p>Currently that means entering the "Enable boot to desktop" menu item and then selecting "no". We won't be using the desktop (we're going to run headless), and disabling the boot to desktop option will free up some system resources so the Pi performs better.</p>
+	<h3 id="3.8" name="3.8">Update your Locale settings</h3>
+		<p>If you're in the UK then it's already set to use UK English in UTF8 - if not, pick the best choice for your location and if you can, a UTF-8 version of your locale. Also set your timezone. I used US-UTF8 and my timezone is in Amsterdam</p>
+	<h3 id="3.9" name="3.9">Set your Hostname (Advanced > Hostname)</h3>
+		<p>Your 'hostname' is simply the name of the Pi itself, you can choose anything but don't use special characters or spaces. So, for example, 'webserver1′ might be good for you. I picked: srv01</p>
+	<h3 id="3.10" name="3.10">Set the Memory Split (Advanced > Memory Split)</h3>
+		<p>The Pi's GPU and CPU both share the same RAM modules (512Mb of it in current Pi models). As we won't be running a desktop we don't need the GPU to have much memory, so we can set it to 16 - leaving the rest of the RAM free for the system to use.</p>
+	<h3 id="3.11" name="3.11">Ensure SSH is enabled (Advanced > SSH)</h3>
+		<p>SSH is the protocol we will be using to access and control the Pi from another computer. It must be enabled for us to do that.</p>
+	<h3 id="3.12" name="3.12">Commit the changes and reboot</h3>
+		<p>Select 'Finish' - if it asks, yes you want to reboot. If it doesn't ask to reboot then force a reboot so the new hostname and other changes take effect; type:</p>
+		<pre>sudo reboot</pre>
+		<p>Once it's rebooted you'll be prompted for the username/password. Use 'pi' and the password you just set up.</p>
+
+</article>
+</section>
+
+
+<section id="second" class="container">
+<article class="movable">
+<h2 id="4.0" name="4.0">Initial configuration</h2>
+<p>For the next part I used a guide <a href="https://mattwilcox.net/web-development/setting-up-a-secure-home-web-server-with-raspberry-pi" alt="Setting up a (reasonably) secure home web-server with Raspberry Pi">Setting up a (reasonably) secure home web-server with Raspberry Pi</a> written by Matt Wilcox.</p>
+
+<p>I made the same setup. A Nginx, PHP, MySql web-server. In addition to that a Postfix, Dovecot email server.</p>
+
+<h3 id="4.1" name="4.1">Set up Raspberry Pi</h3>
+<p>The first part of his guide we already did above. One of the things I want to do now is getting rid of the television. I want to control my Raspberry from a terminal on my Mac (or Putty in Windows). That step is described at the bottom of Matt's guide. We're gonna start with it.</p>
+
+<h3 id="4.2" name="4.2">Creating a new user</h3>
+<p>As Matt describes it's a good idea to change the user Pi. We're gonna make a new user. Type in bash:</p>
+<pre>groups</pre>
+<p>You will see a list output similar to the one below - yours may be different to mine (this article will become old and out of date) so pay attention to your list and not mine!</p>
+<pre>pi adm dialout cdrom sudo audio video plugdev games users netdev input</pre>
+<p>Now we can create a new user. Type the following into the command prompt but remember to use your list of groups (minus the first 'pi' item) and replace USERNAME with the username you want to create. Make sure you type it all on one line (if you're seeing the line wrap here that's just to make things readable for you).</p>
+<pre>sudo useradd -m -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input USERNAME</pre>
+<p>Next we set a password for the new user:</p>
+<pre>sudo passwd USERNAME</pre>
+<p>Complete the prompts as they appear. Now shutdown the Pi:</p>
+<pre>sudo shutdown -h now</pre>
+<p>The Pi will turn itself off. Un-plug the power, plug in the network cable, then plug the power back in. The Pi will boot up and leave you in a Bash shell asking for a login name: Log-in with your newly created user's details (i.e., don't log in as 'pi').</p>
+<h3 id="4.3" name="4.3">Deleting the default 'pi' user</h3>
+<p>Type:</p>
+<pre>sudo deluser --remove-all-files pi</pre>
+<p>This will take a little while and spit out a lot of lines of text - eventually it will say 'Done'. The 'pi' user and its associated files are now removed from the system.</p>
+<h3 id="4.4" name="4.4">Set up a fixed IP address for your Pi</h3>
+<p>Make sure your Pi gets a fixed IP address assigned by your router.</p>
+
+	<p>Find the MAC address of the Pi</p>
+	<p>Set the router to always assign the same IP to any device with that MAC address</p>
+
+<p>To find your Pi's MAC address type:</p>
+<pre>ifconfig</pre>
+<h3 id="4.5" name="4.5">Going headless</h3>
+<p>At this point I shut down my Pi. Removed the Pi from the television and moved it to the room with my routers and external harddisks. Connect the ethernet cable, the external harddisk and power up the Pi.</p>
+<p>Your Pi should get its fixed IP-address assigned by your router.</p>
+<p>Start a terminal session on your Mac and login to your Pi with ssh by typing:</p>
+<pre>ssh USERNAME@IPADDRESS</pre>
+<p>For example: ssh pestmeester@192.168.178.39</p>
+<p>Enter your password (we're gonna change this to SSH Key Pair Autentication later) and you're logged into your Pi.</p>
+<h3 id="4.6" name="4.6">Updating the operating system and software</h3>
+<p>Lets perfrom an update on our operating system now. We're gonna start the real stuff any moment now. To update the system type:</p>
+<pre>sudo apt-get update</pre>
+<p>Wait for this to complete; it's just got a list of all the potential updates and new bits of software you could install. To upgrade all of the currently installed software type:</p>
+<pre>sudo apt-get upgrade</pre>
+<p>Wait for that to complete, answer any prompts with 'y' + Enter. Your system is now up-to-date.</p>
+
+</article>
+</section>
+
+<section id="third" class="container"> 
+<article class="work">
+
+<h2 id="5.0" name="5.0">Setting up your USB Drive</h2>
+<p>Before I can mount my USB Drive I have to format it correctly. I did the formatting of my USB Drive a bit different than Matt's guide. I couldn't use fdisk as that doesn't support GPT partition tables. So I used Linux's Partition Editor (parted), which is included in Raspbian. I went through a part of a <a href="https://melgrubb.wordpress.com/2014/08/01/raspberry-pi-home-server-part-6-adding-a-hard-drive/" alt="Raspberry Pi Home Server: Part 6, Adding a hard drive">guide by Mel Grubb</a> (not everything, as I only want my USB Drive to contain data for now).</p>
+<p>Type in:</p>
+<pre>sudo parted</pre>
+<p>You see a different kind of command line. To see a list of all the known devices and partitions, type:
+
+<pre>print all</pre>
+
+<p>Parted should print out a table with connected drives.</p>
+
+<p>Notice the headers above the tables. The header tells you information about the drive in general. In my case I saw a header for the SD Card and in the other table a header for my USB drive. The USB drive was assigned the name /dev/sda and that it's 2TB in size.</p>
+
+<p>Select the external drive by typing:</p>
+
+<pre>select /dev/sda</pre>
+
+<p>Make sure the correct drive is selected by typing:</p>
+
+<pre>print</pre>
+
+<p>You should see the table of your USB drive called /dev/sda. Read the header carefully, and make sure it's referring to the external drive, because you're about to blow away the partition table.</p>
+
+<p>Create a new partition table with the command:
+
+<pre>mklabel gpt</pre>
+
+<p>Read the warning carefully, and make sure it refers to /dev/sda.</p>
+
+<p>Answer "y" to the prompt, and in a few seconds, you will have a nice blank slate to work with. Check the results with:</p>
+
+<pre>print</pre>
+
+<p>The header should now say that the partition table type is "gpt", and there should be no partitions on it.</p>
+
+<h3 id="5.1" name="5.1">Create the partition</h3>
+<p>Here I went in a different direction than Mel Grubb's guide. He creates 2 partitions. I only want one big partition. So I created one new 2TB partition starting at the beginning of the drive and covering 100% of its space. Type in:</p>
+<pre>mkpart primary 0GB 100%</pre>
+<p>Type "print" to see the result. You should see a big ext4 external drive with 2TB size.</p>
+<p>If you don't see "ext4" under File System, we need to fix that after we quit parted. Remember the number in front of the line. In most cases this will be a 1, refering to partition: /dev/sda1</p>
+<p>To quit parted type:</p>
+
+<pre>q</pre>
+
+<p>This will exit parted. You can ignore the warning about updating /etc/fstab for now. We'll get to that in a moment. If you did see "ext4" under File system you can continue to the next chapter. If it was empty type the following (change the number in sda1 to the number of your own partition):</p>
+
+<pre>mkfs.ext4 /dev/sda1</pre>
+
+	<p>This will make the /dev/sda1 an ext4 file system. Without it, you won't be able to mount.</p>
+
+<h3 id="5.2" name="5.2">Mounting the USB drive</h3>
+<p>Back to Matt's guide! We're gonna permanently mount the empty USB drive to the Pi. Type in:</p>
+<pre>sudo fdisk -f</pre>
+<p>You'll see a list of storage devices attached to the Pi; one is the SD card, the other is the drive you just plugged in. The SD card will be the one identified as /dev/mmcblk0 and will likely have a number of 'partitions' listed under it. We are interested in the other one; for me that is /dev/sda, and it has one partition '/dev/sda1' yours will likely be the same, but check, and use your value in the following commands rather than mine.</p>
+<p>The USB drive is now blank and in a Linux native filesystem format. Now we need to mount it (i.e., let Linux actually use it). First we create a mount point (a directory name we will access the drive from):</p>
+<pre>sudo mkdir /data</pre>
+<p>You can pick any name for data. I personally found it handy to name my data directory data.</p>
+<p>Now we actually mount the drive onto that mount point:</p>
+<pre>sudo mount /dev/sda1 /data</pre>
+<p>The drive is now available to the root user, but no one else has permission to access it. We can change that as follows:</p>
+<pre>sudo chgrp -R users /data</pre>
+<p>Now any user belonging to the 'users' group can access the drive. But they can't write to it yet:</p>
+<pre>sudo chmod -R g+w /data</pre>
+<p>Now they can. The last job is to set up auto-mounting. Right now, if you rebooted the Pi then the /data directory would be inaccessible because the drive would need to be re-mounted. That's annoying, so we'll automate that:</p>
+<p>I used a different guide for my settings for auto-mounting my USB-drive. Type in:</p>
+<pre>ls -l /dev/disk/by-uuid/</pre>
+<p>You see a list of partitions including a UUID. In my case:</p>
+<p>lrwxrwxrwx 1 root root 10 Feb 16 10:13 e79c0ae1-49cb-4835-a13f-7fdd7ba88ecd -> ../../sda1</p>
+<p>Write down that UUID: e79c0ae1-49cb-4835-a13f-7fdd7ba88ecd</p>
+<p>Now open /etc/fstab:</p>
+<pre>sudo nano /etc/fstab</pre>
+<p>You'll see a somewhat complicated looking file. We just need to add a new line to it at the bottom and separate each item on the line with a tab - be sure to press the tab key where you see [tab] instead of writing the phrase [tab]</p>
+<p>Add the mount information in the fstab file (replace UUID with your own):</p>
+<pre>UUID=e79c0ae1-49cb-4835-a13f-7fdd7ba88ecd [tab] /data [tab] ext4 [tab] defaults,nofail [tab] 0 [tab] 2</pre>
+<p>I had to add 'nofail' as sometimes my Pi would halt reboot, as my drive was mounted a bit slow. In that case I would have to press Ctrl+D to continue the boot, which I don't want. The drive will get mounted shortly after anyway.</p>
+<p>Let's test if the drive will now automatically mount when we reboot the Pi. Type in:</p>
+<pre>sudo reboot</pre>
+<p>Wait a little bit for the device to reboot. Your terminal will get disconnected from the Pi. After about 30 seconds log back in from your terminal again by typing:</p>
+<pre>ssh USERNAME@IPADDRESS</pre>
+<p>Lets see if the Drive is still connected! Type in:</p>
+<pre>df -h</pre>
+<p>You should see a list with drives and partitions. One of them should read something like this:</p>
+<pre>/dev/sda1       1.8T   40G  1.7T   3% /data</pre>
+<p>Excellent! We got ourselves some diskspace.</p>
+
+</article>
+</section>
+
+<section id="second" class="container">
+<article class="movable">
+
+<h2 id="6.0" name="6.0">Securing your Pi</h2>
+<p>I did the optional step describedd in Matt's guide. Matt refers to <a href="https://www.linode.com/docs/security/securing-your-server/" alt="Securing your server">an excellent guide by Linode</a>. I used that as well and will write down all the steps I took.</p>
+<p>The first part of the guide we already performed earlier. I scrolled directly to the paragraph Using SSH Key Pair Authentication.</p>
+<p>You've used password authentication to connect to your Pi via SSH, but there's a more secure method available: key pair authentication. In this section, you'll generate a public and private key pair using your desktop computer and then upload the public key to your Pi. SSH connections will be authenticated by matching the public key with the private key stored on your desktop computer - you won't need to type your account password. When combined with the steps outlined later in this guide that disable password authentication entirely, key pair authentication can protect against brute-force password cracking attacks.</p>
+<p>Generate the SSH keys on a desktop computer running Linux or Mac OS X by entering the following command in a terminal window <b>on your desktop computer</b>. (A new MAC terminal. Not your session in Pi.) PuTTY users can generate the SSH keys by following the windows specific instructions in the <a href="https://www.linode.com/docs/security/use-public-key-authentication-with-ssh#windows-operating-system" alt="Use Public Key Authentication with SSH Guide">Use Public Key Authentication with SSH Guide</a>. Type in:</p>
+<pre>ssh-keygen</pre>
+<p>The SSH keygen utility appears. Follow the on-screen instructions to create the SSH keys on your desktop computer. To use key pair authentication without a passphrase, press Enter when prompted for a passphrase.</p>
+<p>Two files will be created in your \~/.ssh directory: id_rsa and id_rsa.pub. The public key is id_rsa.pub - this file will be uploaded to your Pi. The other file is your private key. Do not share this file with anyone!</p>
+<p>Upload the public key to your Pi with the secure copy command (scp) by entering the following command in a terminal window on your desktop computer. Replace USERNAME with your username, and 192.168.178.39 with your Pi's IP address. If you have a Windows desktop, you can use a third-party client like WinSCP to upload the file to your home directory.</p>
+<pre>scp ~/.ssh/id_rsa.pub USERNAME@192.168.178.39:</pre>
+<p>Go back to your Pi terminal session and create a directory for the public key in your home directory (/home/USERNAME) by entering the following command on your Pi:</p>
+<pre>sudo mkdir .ssh</pre>
+<p>Move the public key in to the directory you just created by entering the following command on your Pi:</p>
+<pre>sudo mv id_rsa.pub .ssh/authorized_keys</pre>
+<p>Modify the permissions on the public key by entering the following commands, one by one, on your Pi. Replace example_user with your username.</p>
+
+<pre>sudo chown -R example_user:example_user .ssh</pre>
+<pre>sudo chmod 700 .ssh</pre>
+<pre>sudo chmod 600 .ssh/authorized_keys</pre>
+
+<p>The SSH keys have been generated, and the public key has been installed on your Pi. You're ready to use SSH key pair authentication! To try it, log out of your terminal session and then log back in. The new session will be authenticated with the SSH keys and you won't have to enter your account password. (You'll still need to enter the passphrase for the key, if you specified one.)</p>
+
+<h3 id="6.1" name="6.1">Disabling SSH Password Authentication and Root Login</h3>
+<p>You just strengthened the security of your Pi by adding a new user and generating SSH keys. Now it's time to make some changes to the default SSH configuration. First, you'll disable password authentication to require all users connecting via SSH to use key authentication. Next, you'll disable root login to prevent the root user from logging in via SSH. These steps are optional, but are strongly recommended.</p>
+<p>Here's how to disable SSH password authentication and root login:</p>
+
+<p>Open the SSH configuration file for editing by entering the following command:</p>
+
+<pre>sudo nano /etc/ssh/sshd_config</pre>
+
+<p>Change the PasswordAuthentication setting to no as shown below. Verify that the line is uncommented by removing the # in front of the line, if there is one.:</p>
+
+<pre>PasswordAuthentication no</pre>
+<p>Change the PermitRootLogin setting to no as shown below:</p>
+
+<pre>PermitRootLogin no</pre>
+<p>Save the changes to the SSH configuration file by pressing Control-X, and then Y.</p>
+<p>Restart the SSH service to load the new configuration. Enter the following command:</p>
+
+<pre>sudo service ssh restart</pre>
+
+<h3 id="6.2" name="6.2">Creating a Firewall</h3>
+<p>Now it's time to set up a firewall to limit and block unwanted inbound traffic to your Pi. This step is optional, but we strongly recommend that you use the example below to block traffic to ports that are not commonly used. It's a good way to deter would-be intruders! You can always modify the rules or disable the firewall later.</p>
+<p>Here's how to create a firewall on your Pi:</p>
+
+<p>Check your Pi's default firewall rules by entering the following command:</p>
+
+<pre>sudo iptables -L</pre>
+<p>Examine the output. If you haven't implemented any firewall rules yet, you should see an empty ruleset, as shown below:</p>
+
+<pre>Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination</pre>
+<p>Create a file to hold your firewall rules by entering the following command:</p>
+
+<pre>sudo nano /etc/iptables.firewall.rules</pre>
+
+<p>Now it's time to create some firewall rules. We've created some basic rules to get you started. Copy and paste the rules shown below in to the iptables.firewall.rules file you just created.</p>
+
+<pre>*filter
+
+#  Allow all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
+-A INPUT -i lo -j ACCEPT
+-A INPUT -d 127.0.0.0/8 -j REJECT
+
+#  Accept all established inbound connections
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+#  Allow all outbound traffic - you can modify this to only allow certain traffic
+-A OUTPUT -j ACCEPT
+
+#  Allow HTTP and HTTPS connections from anywhere (the normal ports for websites and SSL).
+-A INPUT -p tcp --dport 80 -j ACCEPT
+-A INPUT -p tcp --dport 443 -j ACCEPT
+
+# Allows SMTP access
+-A INPUT -p tcp --dport 25 -j ACCEPT
+-A INPUT -p tcp --dport 465 -j ACCEPT
+-A INPUT -p tcp --dport 587 -j ACCEPT
+
+# Allows pop and pops connections
+# -A INPUT -p tcp --dport 110 -j ACCEPT
+# -A INPUT -p tcp --dport 995 -j ACCEPT
+
+# Allows imap and imaps connections
+-A INPUT -p tcp --dport 143 -j ACCEPT
+-A INPUT -p tcp --dport 993 -j ACCEPT
+
+#  Allow SSH connections
+#  The -dport number should be the same port number you set in sshd_config
+-A INPUT -p tcp -m state --state NEW --dport 22 -j ACCEPT
+
+#  Allow ping
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+#  Log iptables denied calls
+-A INPUT -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
+
+#  Drop all other inbound - default deny unless explicitly allowed policy
+-A INPUT -j DROP
+-A FORWARD -j DROP
+
+COMMIT</pre>
+<p>Edit the rules as necessary. By default, the rules will allow traffic to the following services and ports: HTTP (80), HTTPS (443), SSH (22), and ping. I also added SMTP, Pop and IMAP as we need those later. All other ports will be blocked.</p>
+<p>We'll add a few more rules later, when we get that email server running.</p>
+<p>Save the changes to the firewall rules file by pressing Control-X, and then Y.</p>
+
+<p>Activate the firewall rules by entering the following command:</p>
+<pre>sudo iptables-restore < /etc/iptables.firewall.rules</pre>
+<p>Recheck your Pi's firewall rules by entering the following command:</p>
+
+<pre>sudo iptables -L</pre>
+
+<p>Examine the output. The new ruleset should look like the one shown below:</p>
+
+<pre>
+Chain INPUT (policy ACCEPT)
+target     prot opt source     destination
+ACCEPT     all  --  anywhere   anywhere            
+REJECT     all  --  anywhere   loopback/8  reject-with icmp-port-unreachable
+ACCEPT     all  --  anywhere   anywhere    state RELATED,ESTABLISHED
+ACCEPT     tcp  --  anywhere   anywhere    tcp dpt:http
+ACCEPT     tcp  --  anywhere   anywhere    tcp dpt:https
+ACCEPT     tcp  --  anywhere   anywhere    tcp dpt:smtp
+ACCEPT     tcp  --  anywhere   anywhere    tcp dpt:ssmtp
+ACCEPT     tcp  --  anywhere   anywhere    tcp dpt:submission
+ACCEPT     tcp  --  anywhere   anywhere    tcp dpt:imap2
+ACCEPT     tcp  --  anywhere   anywhere    tcp dpt:imaps
+ACCEPT     tcp  --  anywhere   anywhere    state NEW tcp dpt:ssh
+ACCEPT     icmp --  anywhere   anywhere    icmp echo-request
+LOG        all  --  anywhere   anywhere    limit: avg 5/min burst 5 LOG level debug prefix "iptables denied:"
+DROP       all  --  anywhere   anywhere 
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source     destination
+DROP       all  --  anywhere   anywhere
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source     destination
+ACCEPT     all  --  anywhere   anywhere</pre>
+
+<p>Now you need to ensure that the firewall rules are activated every time you restart your Pi.</p>
+
+<p>Start by creating a new script with the following command:</p>
+<pre>sudo nano /etc/network/if-pre-up.d/firewall</pre>
+<p>Copy and paste the following lines in to the file you just created:</p>
+
+<pre>#!/bin/sh
+/sbin/iptables-restore < /etc/iptables.firewall.rules</pre>
+
+<p>Press Control-X and then press Y to save the script. Set the script's permissions by entering the following command:</p>
+
+<pre>sudo chmod +x /etc/network/if-pre-up.d/firewall</pre>
+
+<p>That's it! Your firewall rules are in place and protecting your Pi. Remember, you'll need to edit the firewall rules later if you install other software or services.</p>
+
+<h3 id="6.3" name="6.3">Installing and Configuring Fail2Ban</h3>
+<p>Fail2Ban is an application that prevents dictionary attacks on your server. When Fail2Ban detects multiple failed login attempts from the same IP address, it creates temporary firewall rules that block traffic from the attacker's IP address. Attempted logins can be monitored on a variety of protocols, including SSH, HTTP, and SMTP. By default, Fail2Ban monitors SSH only.</p>
+
+<p>Here's how to install and configure Fail2Ban. Install Fail2Ban by entering the following command:</p>
+
+<pre>sudo apt-get install fail2ban</pre>
+
+<p>Fail2Ban is now installed and running on your Pi. It will monitor your log files for failed login attempts. After an IP address has exceeded the maximum number of authentication attempts, it will be blocked at the network level and the event will be logged in /var/log/fail2ban.log.</p>
+</article>
+</section>
+
+<section id="third" class="container">
+<article class="work">
+<h2 id="7.0" name="7.0">Install web server</h2>
+<p>Like Matt Willcox, I'm also gonna use Nginx as my webserver. Let's head back to his guide.</p>
+
+<p>I'm going to use nginx rather than the more traditional Apache2, because it is more efficient and on a low-power device like the Pi that's going to be important. I'm also going to install PHP5 (with PHP APC to make it faster than normal) and MySQL as these are pretty common technologies I'm likely to use (I may later play with nodejs and other databases, but for now a standard PHP/MySQL set up is fine). Type (all on one line):</p>
+<pre>sudo apt-get install nginx php5-fpm php5-curl php5-gd php5-cli php5-mcrypt php5-mysql php-apc mysql-server</pre>
+<p>Wait while all of these are set up. Follow any prompts that appear - yes you do want to set a password for the MySQL root user, choose one and remember it.</p>
+<pre>sudo nano /etc/nginx/nginx.conf</pre>
+<p>As I use the new Raspberry Pi 2 B with 4 cores, I don't need to change that setting in the worker_processes. If you have the dual core, change the value from 4 to 2.</p>
+<p>Inside the http { … } block we want to un-comment the 'server_tokens off' line; enabling this line stops nginx from reporting which version it is to browsers; which helps to stop people from learning your nginx version and then Googling for exploits they might be able to use to hack you. We're also going to add some lines under the Gzip section. Gzip compresses the files before they are sent over the network; which means a faster transfer. Gzipping them does take a bit of time as the Pi will have to zip them all before it sends them. Usually it's a good trade off and ends up with a faster responding website. You can experiment with this on and off to see which is better for you. You want that section to look like this:</p>
+<pre>
+##
+# Gzip Settings
+##
+
+gzip on;
+gzip_disable "msie6";
+
+gzip_min_length   1100;
+gzip_vary         on;
+gzip_proxied      any;
+gzip_buffers      16 8k;
+gzip_comp_level   6;
+gzip_http_version 1.1;
+gzip_types        text/plain text/css applciation/json application/x-javascript text/xml application/xml 
+                  application/rss+xml text/javascript images/svg+xml application/x-font-ttf font/opentype 
+                  application/vnd.ms-fontobject;</pre>
+
+<p>We're telling nginx to only Gzip files above a certain size, setting some buffers, and telling it which filetypes to Gzip. We're also setting how compressed to be in gzip_comp_level. It accepts values from 1 to 9; 1 is the least compressed but fastest to compute. 9 is the most compressed but slowest to compute. With the Pi being a low power CPU I've chosen a middle-ground value of 6. We'll also harden nginx against DDOS attacks a little bit by setting some more values. Add these somewhere inside the http block:</p>
+<pre>client_header_timeout 10;
+client_body_timeout   10;
+keepalive_timeout     10 10;
+send_timeout          10;</pre>
+
+<p>All we're doing here is limiting the amount of time nginx will wait for client connections. Keeping these short means that it's a bit harder to flood nginx into a state of unresponsiveness. Hit Ctrl + X to exit, save your changes. We also need to set a few sane defaults for nginx when we want to use PHP with it. Enabling PHP support is not a global change, instead we can enable nginx to use PHP for specific virtual hosts, or even for specific directories within a specific virtual host. To set up some nice defaults we can import into virtual hosts as we go, type:</p>
+<pre>sudo nano /etc/nginx/fastcgi_params</pre>
+<p>Now, make sure your block looks just like the one below (which is taken directly from the <a href="http://wiki.nginx.org/PHPFcgiExample" alt="official nginx wiki article">official nginx wiki article</a>)</p>
+
+<pre>fastcgi_param   QUERY_STRING            $query_string;
+fastcgi_param   REQUEST_METHOD          $request_method;
+fastcgi_param   CONTENT_TYPE            $content_type;
+fastcgi_param   CONTENT_LENGTH          $content_length;
+
+fastcgi_param   SCRIPT_FILENAME         $document_root$fastcgi_script_name;
+fastcgi_param   SCRIPT_NAME             $fastcgi_script_name;
+fastcgi_param   PATH_INFO               $fastcgi_path_info;
+fastcgi_param   REQUEST_URI             $request_uri;
+fastcgi_param   DOCUMENT_URI            $document_uri;
+fastcgi_param   DOCUMENT_ROOT           $document_root;
+fastcgi_param   SERVER_PROTOCOL         $server_protocol;
+
+fastcgi_param   GATEWAY_INTERFACE       CGI/1.1;
+fastcgi_param   SERVER_SOFTWARE         nginx/$nginx_version;
+
+fastcgi_param   REMOTE_ADDR             $remote_addr;
+fastcgi_param   REMOTE_PORT             $remote_port;
+fastcgi_param   SERVER_ADDR             $server_addr;
+fastcgi_param   SERVER_PORT             $server_port;
+fastcgi_param   SERVER_NAME             $server_name;
+
+fastcgi_param   HTTPS                   $https;
+
+# PHP only, required if PHP was built with --enable-force-cgi-redirect
+fastcgi_param   REDIRECT_STATUS         200;</pre>
+
+<h3 id="7.1" name="7.1">Setting up PHP</h3>
+<p>The default settings for PHP will work fine and it's already pretty well optimised (it even uses Unix sockets rather than TCP to communicate with nginx), but from a security standpoint we can ensure that PHP's FPM module will only listen to nginx (and therefore is less likely to be hacked) by typing:</p>
+<pre>sudo nano /etc/php5/fpm/pool.d/www.conf</pre>
+<p>And un-commenting the lines listen.owner and listen.group. Save and exit the file.</p>
+<h3 id="7.2" name="7.2">Securing MySQL</h3>
+<p>MySQL ships with a few conveniences that are supposed to be removed when put on a real server, to do that type:</p>
+<pre>sudo mysql_secure_installation</pre>
+<p>Carefully read all the prompts and answer them.</p>
+</article>
+</section>
+
+
+<section id="second" class="container">
+	<article class="movable">
+<h2 id="8.0" name="8.0">Setting up your first website</h2>
+<p>You can host as many websites as you like on one Pi/nginx install, but with the Pi being fairly lightweight, and with your uploads from it all going over your home internet connection it's a good idea to not have too many. Let's say we're going to create a website called "mysite"; we will want to be able to access it on the internal network from http://mysite.local and we'll want to access it from the internet at http://mysite.com.</p>
+<h3 id="8.1" name="8.1">Setting up the mysite.local address</h3>
+<p>Being able to use http://mysite.local means your network traffic stays in your home network and doesn't go out to the internet - which will make it a lot faster while you're at home. Then you can use the http://mysite.com url to access it when you're not at home. The easiest way to get mysite.local working for you is to edit your computer's hosts file (i.e., the computer you'll access the Pi from, not the Pi's hosts file). If you're on OSX or Linux just open a new Terminal and type:</p>
+<pre>sudo nano /etc/hosts</pre>
+<p>If you're stuck on Windows, <a href="https://www.google.com/search?q=edit+windows+hosts+file" alt="Let me google that for you">Google how to edit your hosts file</a>.<p>
+
+<p>In your hosts file add the following line: YOUR-PI'S-IP-ADDRESS mysite.com.local So, for example;</p>
+<pre>192.168.178.39 mysite.com.local</pre>
+<p>Save the file with Ctrl+X, save your changes. Now, whenever you type "http://mysite.local" into a browser on your computer, it will go straight to the Pi over your home network. If you were on OSX/Linux close the Terminal and return to the one that's SSH'd to the Pi.</p>
+<h3 id="8.2" name="8.2">Create the directory for your website's files</h3>
+<p>Lets make our first simple website. I'm hosting all mine on the external USB drive I mounted earlier. In the directory /data. Type:</p>
+<pre>sudo mkdir -p /data/mysite.com/www</pre>
+<pre>sudo mkdir -p /data/mysite.com/logs</pre>
+<p>All your PHP/HTML/CSS etc will live in /data/mysite.com/www, and all of the access and error logs related to that site will go into /data/mysite.com/logs. Just so we can test the site is working later, lets create a minimalist HTML file in /data/mysite.com/www:</p>
+<pre>sudo nano /data/mysite.com/www/index.html</pre>
+<p>Write a short message or bit of HTML. Quit and save changes. Now we want to secure the /data/mysite.com files and directories a little bit - they're currently owned by root, and in order for nginx to have access they need to be owned by a special user and group called 'www-data'.</p>
+<pre>sudo chown -R www-data:www-data /data/mysite.com</pre>
+<p>This changes the mysite directory and all of its contents to have the www-data owner and group.</p>
+<h3 id="8.3" name="8.3">Configure nginx to serve the website</h3>
+<p>We'll start by making a copy of the default website config that ships with nginx, then customising it. "Available" sites are all stored as individual configuration files inside the directory /etc/nginx/sites-available - we need to create a new one for 'mysite.com'</p>
+<pre>cd /etc/nginx/sites-available</pre>
+<pre>sudo cp default mysite.com</pre>
+<p>That's made a site available (to nginx) but it is not yet enabled (i.e., it's not yet used by nginx); to enable it we create a 'symbolic link' inside /etc/nginx/sites-enabled to the file we just created:</p>
+<pre>sudo ln -s /etc/nginx/sites-available/mysite.com /etc/nginx/sites-enabled/mysite.com</pre>
+<p>If we ever want to disable a website all we need to do is delete the symbolic link from the sites-enabled directory (which leaves the file in sites-available where it is). We'll remove the default website while we're here:</p>
+<pre>sudo rm /etc/nginx/sites-enabled/default</pre>
+<p>Now lets re-load nginx so our changes all take effect:</p>
+<pre>sudo /etc/init.d/nginx reload</pre>
+<p>With those re-loaded lets get the settings for 'mysite' correct:</p>
+<pre>sudo nano /etc/nginx/sites-available/mysite.com</pre>
+<p>This will be full of stuff. Once we start working with PhpMyAdmin and Owncloud we need to change more than Matt's guide shows, but lets stick to this simple website first. A copy of the default website configuration with lots of comments to help you out. We need to make some changes: Inside the server { … } block, change the following lines (they won't all be together, just look through and edit):</p>
+<pre>root /data/mysite.com/www</pre>
+<pre>index index.php index.html index.htm</pre>
+<pre>server_name mysite.com.local mysite.com</pre>
+<p>We also want to add a few lines:</p>
+<pre>error_log /data/mysite.com/logs/error.log error;</pre>
+<pre>access_log /data/mysite.com/logs/access.log;</pre>
+<p>Save your edits and quit by pressing Ctrl + X, Y, Enter. Now we can reload the configuration files so nginx uses the new values:</p>
+<pre>sudo /etc/init.d/nginx reload</pre>
+<p>Once that completes open a new browser window on your computer and try to access http://mysite.com.local - you should see the HTML file you created earlier. If so, congratulations, you've got a basic server working on your Pi!</p>
+<h3 id="8.4" name="8.4">Configure nginx to use PHP</h3>
+<p>Right now you're stuck with serving flat HTML files, but supposing you want to use PHP we can set nginx up to do that as follows.</p>
+<pre>sudo nano /etc/nginx/sites-available/mysite.com</pre>
+<p>Now, as a separate location block inside the server { … } block, add:</p>
+<pre>location ~ [^/].php(/|$) {
+    fastcgi_split_path_info ^(.+?.php)(/.*)$;
+    fastcgi_pass unix:/var/run/php5-fpm.sock;
+    fastcgi_index index.php;
+    include fastcgi_params;
+}</pre>
+<p>These settings will be changed later on when we install Owncloud. For now lets keep it simple.</p>
+<h3 id="8.5" name="8.5">Testing your PHP configuration</h3>
+<pre>sudo nano /data/mysite/www/index.php</pre>
+<p>Then write:</p>
+<pre><code>&lt;?php phpinfo(); ?&gt;</code></pre>
+<p>Save and close. Now go visit http://mysite.local.com/index.php in your browser; you should see a pile of information about your PHP configuration - which means it's working. It would be a good idea to remove that index.php file before you allow the site to be visible to the world, as it obviously contains a lot of information a hacker might find useful.</p>
+</article>
+</section>
+
+<section id="first" class="container">
+<article class="movable">
+<h2 id="9.0" name="9.0">Accessing your site via a real domain</h2>
+<p>This bit is pretty easy as far as the Pi is concerned - remember how you included two domain names in the nginx configuration file for 'mysite'; mysite.local and mysite.com? That's literally all there is to it as far as the Pi is concerned. There are just two other things you need to do:</p>
+
+<h3 id="9.1" name="9.1">Setting up your domains A-record</h3>
+
+<p>You need to log into your Domain Registra's account and set the A-record for your domain (mysite.com) to point to your router's public IP address. This process varies between registra's so consult their documentation on how to do this. To find your public IP address just type "what is my IP" into Google, it will tell you right at the top of the page. That's the address you need to point your domain to. This is also why you must have a fixed IP address from your ISP - otherwise when you reboot your home connection your router's IP will change and your domain name will be pointing at the old IP address… so it won't work.</p>
+
+<h3 id="9.2" name="9.2">Setting up your Router</h3>
+
+<p>This is the final step: getting your Domain Name to point to your public IP is half the battle, but now you need to set your router up so that it can forward incoming requests for your website to your Raspberry Pi - otherwise requests for http://mysite.com will get as far as your router and stop there. You'll need to consult your router's documentation again, but you're looking for how to set up "port forwarding". You want to set the http port (and https port if you're instested in using https later…) to go to your Pi's internal IP address. Likewise, you want to make sure your router will allow out-bound network traffic on those ports too.</p>
+
+</article>
+</section>
+
+<section id="third" class="container">
+<article class="work">
+
+<h2 id="10.0" name="10.0">Installing SSL Certificates</h2>
+<p>I want my traffic to go over https instead of http. I bought some <a href="https://www.namecheap.com/security/ssl-certificates/comodo/positivessl.aspx?aff=82346" alt="Comodo Positive SSL certificates at Namecheap">Comodo Positive SSL certificates at Namecheap</a>. I'm gonna use those on mysite.com, www.mysite.com and mail.mysite.com.</p>
+<p>When you apply for a certificate Namecheap will ask for a certificate request. You can make that in your Pi. The output will be a file like: mysite.csr. Let's get started.</p>
+
+<h3 id="10.1" name="10.1">Generating CSR on Nginx</h3>
+<p>This part of the guide comes from Namecheap's article: <a href="https://www.namecheap.com/support/knowledgebase/article.aspx/9446/0/apache-opensslmodsslnginx" alt="Generating CSR on Apache + OpenSSL/ModSSL/Nginx">Generating CSR on Apache + OpenSSL/ModSSL/Nginx</a>.</p>
+<p>To activate an SSL certificate you need to submit a CSR (Certificate Signing Request) on Namecheap's site. CSR is a block of code with encrypted information about your company and domain name. Usually CSR openssl configuration contains by default the details as follows below:</p>
+
+<p>Common Name (the domain name certificate should be issued for)
+Country
+State (or province)
+Locality (or city)
+Organization
+Organizational Unit (Department)
+E-mail address</p>
+<p>Lets make a directory to save the CSR, Key and Certificates in. I made a directory called /ssl in the /nginx folder on my Pi. Type:</p>
+<pre>sudo mkdir /etc/nginx/ssl</pre>
+<p>Go to that directory.</p>
+<pre>cd /etc/nginx/ssl</pre>
+
+<p>To generate a CSR run the command below in your Pi terminal:</p>
+<pre>openssl req -new -newkey rsa:2048 -nodes -keyout mysite.key -out mysite.csr</pre>
+
+<p>Replace 'mysite' with the domain name the certificate will be issued for to avoid further confusion.</p>
+
+<p>The command starts the process of CSR and Private Key generation. The Private Key will be required for certificate installation.</p>
+
+<p>You will be prompted to fill in the information about your Company and domain name.</p>
+
+<p>It is strongly recommended to fill all the required fields in. If a field is left blank, the CSR can be rejected during activation. For certificates with domain validation it is not mandatory to specify "Organization" and "Organization Unit" -you may fill the fields with 'NA' instead. In the Common Name field you need to enter the domain name the certificate should be issued for.</p>
+
+<p>Please use only symbols of English alphanumeric alphabet. Otherwise the CSR can be rejected by a Certificate Authority.</p>
+
+<p>If the certificate should be issued for a specific subdomain, you need to specify the subdomain in 'Common Name'. For example 'sub1.ssl-certificate-host.com'. I just used: mysite.com.</p>
+
+<p>Once all the requested information is filled in, you should have *.csr and *.key files in the folder where the command has been run.</p>
+
+<p>*.csr file contains the CSR code that you need to submit during certificate activation. It can be opened with a text editor. Usually it looks like a block of code with a header: "-----BEGIN CERTIFICATE REQUEST----" It is recommended to submit a CSR with the header and footer.</p>
+
+<p>*.key file is the Private Key, which will be used for decryption during SSL/TLS session establishment between a server and a client. It has such a header: "-----BEGIN RSA PRIVATE KEY-----" Please make sure that the private key is saved as it will be impossible to install the certificate without it on the server afterwards.</p>
+
+<h3 id="10.2" name="10.2">Apply for that certificate</h3>
+<p>Go through the process of applying for the certificate. Enter the entire content of your generated mysite.csr file in the field provided by Namecheap during your application process. You can just copy/paste the contents when you open the file by typing:</p>
+<pre>sudo nano /etc/nginx/ssl/mysite.csr</pre>
+<p>Select everything and copy the text. Don't make any changes. Press X to quit nano.</p>
+<p>Now wait for your certificates to arrive.</p>
+<h3 id="10.3" name="10.3">Installing a certificate on Nginx</h3>
+<p>I will use a Comodo PositiveSSL as an example below. However, the steps remain the same for all SSLs.</p>
+<p>In case of Comodo certificates, you should receive the zip archive with *.crt files.</p>
+<p>Extract the zip archive on your Mac. For Comodo PositiveSSL the files will appear like the ones below:</p>
+<pre>mysite.crt
+ComodoRSADomainValidationSecureServerCA.crt
+COMODORSAAddTrustCA.crt
+AddTrustExternalCARoot.crt</pre>
+
+<h3 id="10.4" name="10.4">Combine all the certificates into a single file</h3>
+<p>For Nginx it is required to have all the certificates (one for your domain name and CA ones) combined in a single file. The certificate for your domain should be listed first in the file, followed by the chain of CA certificates. The order of this chain is VERY important. Go to the terminal of your Mac and navigate to the folder where you extracted the CRT files. To combine the certificates in case of PositiveSSL, run the following command in terminal (in one line):</p>
+
+<pre>cat mysite.crt ComodoRSADomainValidationSecureServerCA.crt COMODORSAAddTrustCA.crt AddTrustExternalCARoot.crt >> cert_chain.crt</pre>
+
+<p>Now upload the single file cert_chain.crt to your Pi with the command scp. Let's upload it first to your users homedirectory, after that we move the file to the /ssl folder. Type:</p>
+
+<pre>scp cert_chain.crt USERNAME@IPOFYOURPI:</pre>
+<p>Go to the terminal of your Pi and move the file to the /ssl folder. Type:</p>
+<pre>sudo mv /home/USERNAME /etc/nginx/ssl</pre>
+<p>Excellent! Now we have to edit our Nginx VirtualHost file.</p>
+<h3 id="10.5" name="10.5">Adding HTTPS support in Nginx VirtualHost file</h3>
+<p>If you do not have a record for port 443 in your VirtualHost, you should add it manually. Open the Nginx VirtualHost file:</p>
+
+<pre>sudo nano /etc/nginx/sites-available/mysite.com</pre>
+<p>And add the server block to support HTTPS connections. This is how my HTTPS server block looks like:</p>
+
+<pre>
+server {
+listen 443 ssl;
+    server_name mysite.com www.mysite.com
+
+    ssl_certificate          /etc/nginx/ssl/cert_chain.crt;
+    ssl_certificate_key      /etc/nginx/ssl/mysite.key;
+
+    root /data/mysite.com/www;
+    index index.php index.html index.htm;
+
+    error_page 404 /404.html;
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /data/mysite.com/www;
+    }
+
+    # Error & Access logs
+    error_log /data/mysite.com/logs/error.log error;
+    access_log /data/mysite.com/logs/access.log;
+
+    location / {
+        index index.html index.php;
+    }
+
+    location ~ \.php(?:$|/) {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_param HTTPS on;
+        server unix:/var/run/php5-fpm.sock;
+    }
+}</pre>
+
+<p>This file will change later with support for PHPMyAdmin, Owncloud and some additional security. I will post my entire file when we get there. For now, lets restart Nginx:</p>
+
+<pre>sudo service nginx restart</pre>
+
+<p>Go have a look at your secure connection in your browser: https://www.mysite.com</p>
+</article>
+</section>
+
+<section id="second" class="container">
+	<article class="movable">
+<h2 id="11.0" name="11.0">Setting up Email with Postfix, Dovecot, and MySQL</h2>
+<p>If you're not interested in running your own mail server you can skip this entire section.</p>
+<p>For this I used <a href="https://www.linode.com/docs/email/postfix/email-with-postfix-dovecot-and-mysql" alt="Email with Postfix, Dovecot, and MySQL">another guide by Linode</a>.</p>
+<p>First, make sure you open up the following ports on your router: 143, 993,465, 25 and 587. This in addition to the ports that already should be open: 80, 443 and 22.</p>
+
+<h3 id="11.1" name="11.1">Configuring DNS</h3>
+
+<p>Add a MX record to your domain provides DNS Manager. For example:</p>
+
+<pre>mail.mysite.com    MX      10      YOUREXTERNALIPADDRESS</pre>
+
+<h3 id="11.2" name="11.2">Installing Packages</h3>
+
+<p>We'll start by installing all of the necessary packages. Go into your Pi terminal and type:</p>
+
+<pre>sudo apt-get install postfix postfix-mysql dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-mysql mysql-server</pre>
+
+<p>When prompted, type a new secure password for the root MySQL user. Type the password again. Make sure you remember what it is - you'll need it later.</p>
+
+<p>You'll be prompted to select a Postfix configuration. Select Internet Site.</p>
+
+<p>You'll be prompted to enter a System mail name, as shown below. You can use your FQDN or any domain name that resolves to the server. This will become your server's default domain for mail when none is specified. I just chose 'mysite.com'.</p>
+
+<p>You just installed packages to support three applications: MySQL, Postfix, and Dovecot. Now it's time to configure the individual applications to work together as a mail server.</p>
+
+<h3 id="11.3" name="11.3">Installing PHPMyAdmin</h3>
+
+<p>This I found very handy for me personally. It's not necessary per se. But having some issues with the installation of Owncloud, I was very happy to quickly drop tables and users in a GUI. If you don't want it, just skip this part and move on to MySQL.</p>
+
+<p>To install phpmyadmin type:</p>
+
+<pre>sudo apt-get install phpmyadmin</pre>
+
+<p>Do not select Apache or Lighttpd.</p>
+
+<p>If you get the screen if you want db-config, choose "Yes"</p>
+
+<p>Enter a MySQL password and wait for the installation to complete.</p>
+
+<p>Now we need to make phpmyadmin accessible from your browser. We need to add a few lines to our Nginx Virtual Host file. Open it:</p>
+
+<pre>sudo nano /etc/nginx/sites-available/mysite.com</pre>
+
+<p>Add these lines just before the last } of each server block. You can do this for both server block 80 and 443.</p>
+
+<pre>
+	######  phpMyAdmin  ############################################################
+    location /phpmyadmin {
+        root /usr/share/;
+        index index.php index.html index.htm;
+        location ~ ^/phpmyadmin/(.+\.php)$ {
+            root /usr/share/;
+            #include fastcgi-gen.conf;
+           fastcgi_pass unix:/var/run/php5-fpm.sock;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include /etc/nginx/fastcgi_params;
+            fastcgi_buffer_size 128k;
+            fastcgi_buffers 256 4k;
+            fastcgi_busy_buffers_size 256k;
+            fastcgi_temp_file_write_size 256k;
+            fastcgi_read_timeout 240;
+        }
+        location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+            root /usr/share/;
+        }
+    }
+    location /phpMyAdmin {
+        rewrite ^/* /phpmyadmin last;
+    }</pre>
+
+<p>Save the file by pressing CTRL+X, choose Yes and enter.</p>
+
+<p>Restart php by typing:</p>
+
+<pre>sudo service php5-fpm restart</pre>
+
+<p>And you're done. Now you can access phpmyadmin by typing: https://www.mysite.com/phpmyadmin. Login with username: root and the password you chose during installation. I probably should change user root, but I'll do that later. I want to get this stuff running.</p>
+
+<h3 id="11.3" name="11.3">MySQL</h3>
+
+<p>First, you'll create a dedicated database in MySQL for your mail server. It will have three tables: one with domains, one with email addresses and encrypted passwords, and one with email aliases. You'll also create a dedicated MySQL user for Postfix and Dovecot.</p>
+
+<h3 id="11.4" name="11.4">Creating the Database</h3>
+
+<p>Here's how to create the necessary database and tables in MySQL:</p>
+
+<p>Create a new database by entering the following command. We'll call the database mailserver in this example.</p>
+
+<pre>mysqladmin -p create mailserver</pre>
+
+<p>Enter the MySQL root password.</p>
+
+<p>Log in to MySQL by entering the following command:</p>
+
+<pre>mysql -p mailserver</pre>
+
+<p>Enter the root MySQL password. You should see a command line prompt that looks like this:</p>
+
+<pre>mysql></pre>
+
+<p>Create a new MySQL user (mailuser) by entering the following command. You'll grant the user local, read-level access on the mailserver database, and you'll also set the user's password, which is mailuserpass in the example below. Change this and make a note of the password for future use.</p>
+
+<pre>GRANT SELECT ON mailserver.* TO 'mailuser'@'127.0.0.1' IDENTIFIED BY 'mailuserpass';</pre>
+
+<p>Reload MySQL's privileges to make sure the user has been added successfully:</p>
+
+<pre>FLUSH PRIVILEGES;</pre>
+
+<p>Enter the following command to create a table for the domains that will receive mail on your Pi. You can copy and paste the whole block of code at once. This will create a table called virtual_domains and give it two fields, an id field, and a name field for the domains.</p>
+
+<pre>CREATE TABLE 'virtual_domains' ('id' int(11) NOT NULL auto_increment, 'name' varchar(50) NOT NULL, PRIMARY KEY ('id')) ENGINE=InnoDB DEFAULT CHARSET=utf8;</pre>
+
+<p>Enter the following command to create a table for all of the email addresses and passwords. This command will create a table called virtual_users. It has a domain_id field to associate each entry with a domain, a password field to hold an encrypted version of each user's password, and an email field to hold each user's email address.</p>
+
+<pre>CREATE TABLE 'virtual_users' ('id' int(11) NOT NULL auto_increment, 'domain_id' int(11) NOT NULL, 'password' varchar(106) NOT NULL, 'email' varchar(100) NOT NULL, PRIMARY KEY ('id'), UNIQUE KEY 'email' ('email'), FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8;</pre>
+
+<p>Enter the following command to create a table for your email aliases. This lets you forward mail from one email address to another. This command will create a table called virtual_aliases. It has an id field, a domain_id field which will associate each entry with a domain, a source field for the original email address, and a destination field for the target email address.</p>
+
+<pre>CREATE TABLE 'virtual_aliases' ('id' int(11) NOT NULL auto_increment,'domain_id' int(11) NOT NULL,'source' varchar(100) NOT NULL,'destination' varchar(100) NOT NULL,PRIMARY KEY ('id'),FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8;</pre>
+
+<p>Congratulations! You have successfully created the database and necessary tables in MySQL.</p>
+
+<h3 id="11.5" name="11.5">Adding Data to the Database</h3>
+
+<p>Now that you've created the database and tables, let's add some data to MySQL. Here's how:</p>
+
+<p>Add your domains to the virtual_domains table. You can add as many domains as you want in the VALUES section of the command below, but in this mysite you'll add just the primary domain (mysite.com), your hostname (hostname), your FQDN (srv01.mysite.com), and localhost.mysite.com. (You'll add localhost in a different file later). Be sure to replace mysite.com and hostname with your own domain name and hostname. You'll need an id value and a name value for each entry. Separate each entry with a comma (,), and close the last one with a semicolon (;).
+
+<pre>INSERT INTO 'mailserver'.'virtual_domains' ('id' ,'name') VALUES ('1', 'mysite.com'), ('2', 'srv01.mysite.com'), ('3', 'mail.mysite.com'), ('4', 'localhost.mysite.com');</pre>
+
+<p>Make a note of which id goes with which domain - you'll need for the next two steps.</p>
+
+<p>Add email addresses to the virtual_users table. In this example, you'll add two new email addresses, email1@mysite.com and email2@mysite.com, with the passwords CHOOSEPASSWORD1 and CHOOSEPASSWORD2, respectively. <b>Be sure to replace the examples with your own information, but leave the password encryption functions intact</b>. For each entry you'll need to supply an id value, a domain_id, which should be the id number for the domain from Step 1 (in this case we're choosing 1 for mysite.com), a password which will be in plain text in this command but which will get encrypted in the database, and an email, which is the full email address. Entries should be separated by a comma, and the final entry should be closed with a semicolon.</p>
+
+<pre>INSERT INTO 'mailserver'.'virtual_users' ('id', 'domain_id', 'password' , 'email') VALUES ('1', '1', ENCRYPT('CHOOSEPASSWORD1', CONCAT('$6$', SUBSTRING(SHA(RAND()), -16))), 'email1@mysite.com'), ('2', '1', ENCRYPT('CHOOSEPASSWORD2', CONCAT('$6$', SUBSTRING(SHA(RAND()), -16))), 'email2@mysite.com');</pre>
+
+
+<p>I skipped this step, but if you want to set up an email alias, add it to the virtual_aliases table. Just like in the previous step, we'll need an id value, and a domain_id value chosen from the virtual_domains list in Step 1. The source should be the email address you want to redirect. The destination should be the target email address, and can be any valid email address on your server or anywhere else.</p>
+
+<pre>INSERT INTO 'mailserver'.'virtual_aliases' ('id', 'domain_id', 'source', 'destination') VALUES ('1', '1', 'alias@mysite.com', 'email1@mysite.com');</pre>
+
+<p>That's it! Now you're ready to verify that the data was successfully added to MySQL. Enter the following command to exit MySQL:</p>
+
+<pre>exit</pre>
+
+<p>Now you're ready to set up Postfix so your server can accept incoming messages for your domains.</p>
+
+<h3 id="11.6" name="11.6">Postfix</h3>
+
+<p>Here's how to configure Postfix:</p>
+
+<p>Before doing anything else, enter the following command to make a copy of the default Postfix configuration file. This will come in handy if you mess up and need to revert to the default configuration.</p>
+
+<pre>sudo cp /etc/postfix/main.cf /etc/postfix/main.cf.orig</pre>
+
+<p>Open the configuration file for editing by entering the following command:</p>
+
+<pre>nano /etc/postfix/main.cf</pre>
+
+<p>This is how my files looks. I followed all steps in Linode's guide and changed myhostname, mydestination, my certificate lines and the line at the bottom to support only IPV4, otherwise you'll see ugly errors when restarting postfix, as I don't have IPV6 support yet:</p>
+
+<pre>
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+# Debian specific:  Specifying a file name will cause the first
+# line of that file to be used as the name.  The Debian default
+# is /etc/mailname.
+#myorigin = /etc/mailname
+
+smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+readme_directory = no
+
+# TLS parameters
+#smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+#smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+#smtpd_use_tls=yes
+#smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
+#smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+smtpd_tls_cert_file=/etc/nginx/ssl/cert_chain.crt
+smtpd_tls_key_file=/etc/nginx/ssl/mysite.key
+smtpd_use_tls=yes
+smtpd_tls_auth_only = yes
+
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+
+smtpd_recipient_restrictions =
+          permit_sasl_authenticated,
+          permit_mynetworks,
+          reject_unauth_destination
+
+# See /usr/share/doc/postfix/TLS_README.gz in the postfix-doc package for
+# information on enabling SSL in the smtp client.
+
+myhostname = srv01.mysite.com
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = localhost
+relayhost =
+mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+
+#Handing off local delivery to Dovecot's LMTP, and telling it where to store mail
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+
+#Virtual domains, users, and aliases
+virtual_mailbox_domains = mysql:/etc/postfix/mysql-virtual-mailbox-domains.cf
+virtual_mailbox_maps = mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf
+virtual_alias_maps = mysql:/etc/postfix/mysql-virtual-alias-maps.cf
+
+inet_protocols = ipv4</pre>
+
+<p>Save the changes you've made to the /etc/postfix/main.cf file.</p>
+
+<p>Create the three files you specified earlier. These files will tell Postfix how to connect to MySQL to read the lists of domains, email addresses, and aliases. Create the file for virtual domains by entering the following command:</p>
+
+<pre>nano /etc/postfix/mysql-virtual-mailbox-domains.cf</pre>
+
+<p>Enter the following values. At a minimum, you'll need to change the password entry to the one you created for mailuser. If you used a different user, database name, or table name, customize those settings as well.</p>
+
+<pre>user = mailuser
+	password = mailuserpass
+	hosts = 127.0.0.1
+	dbname = mailserver
+	query = SELECT 1 FROM virtual_domains WHERE name='%s'</pre>
+
+<p>Save the changes you've made to the /etc/postfix/mysql-virtual-mailbox-domains.cf file.</p>
+
+<p>Restart Postfix by entering the following command:</p>
+
+<pre>service postfix restart</pre>
+
+<p>Enter the following command to ensure that Postfix can find your first domain. Be sure to replace mysite.com with your first virtual domain. The command should return 1 if it is successful; if nothing is returned, you have an issue.</p>
+
+<pre>postmap -q mysite.com mysql:/etc/postfix/mysql-virtual-mailbox-domains.cf</pre>
+
+<p>Create the connection file for your email addresses by entering the following command:</p>
+
+<pre>nano /etc/postfix/mysql-virtual-mailbox-maps.cf</pre>
+
+<p>Enter the following values. Make sure you use your own password, and make any other changes as needed.</p>
+
+<pre>user = mailuser
+	password = mailuserpass
+	hosts = 127.0.0.1
+	dbname = mailserver
+	query = SELECT 1 FROM virtual_users WHERE email='%s'</pre>
+
+<p>Save the changes you've made to the /etc/postfix/mysql-virtual-mailbox-maps.cf file.</p>
+
+<p>Restart Postfix by entering the following command:</p>
+
+<pre>service postfix restart</pre>
+
+<p>Test Postfix to verify that it can find the first email address in your MySQL table. Enter the following command, replacing email1@mysite.com with the first email address in your MySQL table. You should again receive 1 as the output:</p>
+
+<pre>postmap -q email1@mysite.com mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf</pre>
+
+<p>Create the file that will allow Postfix to access the aliases in MySQL by entering the following command:</p>
+
+<pre>nano /etc/postfix/mysql-virtual-alias-maps.cf</pre>
+
+<p>Enter the following values. Again, make sure you use your own password, and make any other changes as necessary.</p>
+
+<pre>user = mailuser
+	password = mailuserpass
+	hosts = 127.0.0.1
+	dbname = mailserver
+	query = SELECT destination FROM virtual_aliases WHERE source='%s'</pre>
+
+<p>Save the changes you've made to the /etc/postfix/mysql-virtual-alias-maps.cf file.</p>
+
+<p>Restart Postfix by entering the following command:</p>
+
+<pre>service postfix restart</pre>
+
+<p>Test Postfix to verify that it can find your aliases by entering the following command. Be sure to replace alias@mysite.com with the actual alias you entered:</p>
+
+<pre>postmap -q alias@mysite.com mysql:/etc/postfix/mysql-virtual-alias-maps.cf</pre>
+	
+<p>This should return the email address to which the alias forwards, which is email1@mysite.com in this example.</p>
+
+<p>Make a copy of the /etc/postfix/master.cf file:</p>
+
+<pre>cp /etc/postfix/master.cf /etc/postfix/master.cf.orig</pre>
+
+<p>Open the configuration file for editing by entering the following command:</p>
+
+<pre>nano /etc/postfix/master.cf</pre>
+
+<p>Locate and uncomment the two lines starting with submission and smtps. This will allow you to send mail securely on ports 587 and 465, in addition to port 25 (which is also secure with our SSL setup). The first section of your /etc/postfix/master.cf file should resemble the following:</p>
+
+<pre>
+#
+# Postfix master process configuration file.  For details on the format
+# of the file, see the master(5) manual page (command: "man 5 master").
+#
+# Do not forget to execute "postfix reload" after editing this file.
+#
+# ==========================================================================
+# service type  private unpriv  chroot  wakeup  maxproc command + args
+#               (yes)   (yes)   (yes)   (never) (100)
+# ==========================================================================
+smtp      inet  n       -       -       -       -       smtpd
+#smtp      inet  n       -       -       -       1       postscreen
+#smtpd     pass  -       -       -       -       -       smtpd
+#dnsblog   unix  -       -       -       -       0       dnsblog
+#tlsproxy  unix  -       -       -       -       0       tlsproxy
+submission inet n       -       -       -       -       smtpd
+#  -o syslog_name=postfix/submission
+#  -o smtpd_tls_security_level=encrypt
+#  -o smtpd_sasl_auth_enable=yes
+#  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+#  -o milter_macro_daemon_name=ORIGINATING
+smtps     inet  n       -       -       -       -       smtpd
+#  -o syslog_name=postfix/smtps
+#  -o smtpd_tls_wrappermode=yes
+#  -o smtpd_sasl_auth_enable=yes
+#  -o smtpd_client_restrictions=permit_sasl_authenticated,reject
+#  -o milter_macro_daemon_name=ORIGINATING</pre>
+
+<p>The other text we leave as it is.</p>
+
+<p>Save the changes you've made to the /etc/postfix/master.cf file.</p>
+
+<p>Restart Postfix by entering the following command:</p>
+
+<pre>service postfix restart</pre>
+
+<p>Congratulations! You have successfully configured Postfix.</p>
+
+<h3 id="11.7" name="11.7">Dovecot</h3>
+
+<p>Here's how to configure Dovecot:</p>
+
+<p>Copy all of the configuration files so that you can easily revert back to them if needed. Enter the following commands, one by one:</p>
+
+<pre>sudo cp /etc/dovecot/dovecot.conf /etc/dovecot/dovecot.conf.orig
+sudo cp /etc/dovecot/conf.d/10-mail.conf /etc/dovecot/conf.d/10-mail.conf.orig
+sudo cp /etc/dovecot/conf.d/10-auth.conf /etc/dovecot/conf.d/10-auth.conf.orig
+sudo cp /etc/dovecot/dovecot-sql.conf.ext /etc/dovecot/dovecot-sql.conf.ext.orig
+sudo cp /etc/dovecot/conf.d/10-master.conf /etc/dovecot/conf.d/10-master.conf.orig
+sudo cp /etc/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/10-ssl.conf.orig</pre>
+
+<p>Enter the following command to open the main configuration file for editing:</p>
+
+<pre>nano /etc/dovecot/dovecot.conf</pre>
+
+<p>Verify that dovecot.conf is including all of the other configuration files. This option should be enabled by default:</p>
+
+<pre>## Dovecot configuration file
+
+# If you're in a hurry, see http://wiki2.dovecot.org/QuickConfiguration
+
+# "doveconf -n" command gives a clean output of the changed settings. Use it
+# instead of copy&pasting files when posting to the Dovecot mailing list.
+
+# '#' character and everything after it is treated as comments. Extra spaces
+# and tabs are ignored. If you want to use either of these explicitly, put the
+# value inside quotes, eg.: key = "# char and trailing whitespace  "
+
+# Default values are shown for each setting, it's not required to uncomment
+# those. These are exceptions to this though: No sections (e.g. namespace {})
+# or plugin settings are added by default, they're listed only as examples.
+# Paths are also just examples with the real defaults being based on configure
+# options. The paths listed here are for configure --prefix=/usr
+# --sysconfdir=/etc --localstatedir=/var
+
+# Enable installed protocols
+!include_try /usr/share/dovecot/protocols.d/*.protocol
+protocols = imap lmtp
+
+# A comma separated list of IPs or hosts where to listen in for connections.
+# "*" listens in all IPv4 interfaces, "::" listens in all IPv6 interfaces.
+# If you want to specify non-default ports or anything more complex,
+# edit conf.d/master.conf.
+listen = *
+
+# Base directory where to store runtime data.
+#base_dir = /var/run/dovecot/
+
+# Name of this instance. Used to prefix all Dovecot processes in ps output.
+#instance_name = dovecot
+
+# Greeting message for clients.
+#login_greeting = Dovecot ready.
+
+# Space separated list of trusted network ranges. Connections from these
+# IPs are allowed to override their IP addresses and ports (for logging and
+# for authentication checks). disable_plaintext_auth is also ignored for
+# these networks. Typically you'd specify your IMAP proxy servers here.
+#login_trusted_networks =
+
+# Sepace separated list of login access check sockets (e.g. tcpwrap)
+#login_access_sockets =
+
+# Show more verbose process titles (in ps). Currently shows user name and
+# IP address. Useful for seeing who are actually using the IMAP processes
+# (eg. shared mailboxes or if same uid is used for multiple accounts).
+#verbose_proctitle = no
+
+# Should all processes be killed when Dovecot master process shuts down.
+# Setting this to "no" means that Dovecot can be upgraded without
+# forcing existing client connections to close (although that could also be
+# a problem if the upgrade is e.g. because of a security fix).
+#shutdown_clients = yes
+
+# If non-zero, run mail commands via this many connections to doveadm server,
+# instead of running them directly in the same process.
+#doveadm_worker_count = 0
+# UNIX socket or host:port used for connecting to doveadm server
+#doveadm_socket_path = doveadm-server
+
+# Space separated list of environment variables that are preserved on Dovecot
+# startup and passed down to all of its child processes. You can also give
+# key=value pairs to always set specific settings.
+#import_environment = TZ
+
+##
+## Dictionary server settings
+##
+
+# Dictionary can be used to store key=value lists. This is used by several
+# plugins. The dictionary can be accessed either directly or though a
+# dictionary server. The following dict block maps dictionary names to URIs
+# when the server is used. These can then be referenced using URIs in format
+# "proxy::<name>".
+
+dict {
+  #quota = mysql:/etc/dovecot/dovecot-dict-sql.conf.ext
+  #expire = sqlite:/etc/dovecot/dovecot-dict-sql.conf.ext
+}
+
+# Most of the actual configuration gets included below. The filenames are
+# first sorted by their ASCII value and parsed in that order. The 00-prefixes
+# in filenames are intended to make it easier to understand the ordering.
+!include conf.d/*.conf
+
+# A config file can also tried to be included without giving an error if
+# it's not found:
+!include_try local.conf
+
+namespace inbox {
+inbox = yes
+}</pre>
+
+<p>Without the last 3 lines I wasn't able to receive my IMAP messages. Searching around on the web brought me to this fix.</p>
+
+<p>Save your changes to the /etc/dovecot/dovecot.conf file.</p>
+
+<p>Open the /etc/dovecot/conf.d/10-mail.conf file for editing by entering the following command. This file allows us to control how Dovecot interacts with the server's file system to store and retrieve messages.</p>
+
+<pre>nano /etc/dovecot/conf.d/10-mail.conf</pre>
+
+<p>Find the mail_location variable, uncomment it, and then set it to the following value. This tells Dovecot where to look for mail. In this case, the mail will be stored on the external USB drive in /data/mail/vhosts/mysite.com/user/, where mysite.com and user are variables that get pulled from the connecting email address. For example, if someone logs in to the server with the email address email1@mysite.com, Dovecot will use mysite.com for %d, and email1 for %n. You can change this path if you want, but you'll have to change it everywhere else the mail storage path is referenced in this tutorial. It's useful to keep this location in mind if you ever need to manually download the raw mail files from the server.</p>
+
+<p>This is my entire 10-mail.conf file, beware it's a very big file:</p>
+
+<pre>
+##
+## Mailbox locations and namespaces
+##
+
+# Location for users' mailboxes. The default is empty, which means that Dovecot
+# tries to find the mailboxes automatically. This won't work if the user
+# doesn't yet have any mail, so you should explicitly tell Dovecot the full
+# location.
+#
+# If you're using mbox, giving a path to the INBOX file (eg. /var/mail/%u)
+# isn't enough. You'll also need to tell Dovecot where the other mailboxes are
+# kept. This is called the "root mail directory", and it must be the first
+# path given in the mail_location setting.
+#
+# There are a few special variables you can use, eg.:
+#
+#   %u - username
+#   %n - user part in user@domain, same as %u if there's no domain
+#   %d - domain part in user@domain, empty if there's no domain
+#   %h - home directory
+#
+# See doc/wiki/Variables.txt for full list. Some examples:
+#
+#   mail_location = maildir:~/Maildir
+#   mail_location = mbox:~/mail:INBOX=/var/mail/%u
+#   mail_location = mbox:/var/mail/%d/%1n/%n:INDEX=/var/indexes/%d/%1n/%n
+#
+# <doc/wiki/MailLocation.txt>
+#
+mail_location = maildir:/data/mail/vhosts/%d/%n
+
+# If you need to set multiple mailbox locations or want to change default
+# namespace settings, you can do it by defining namespace sections.
+#
+# You can have private, shared and public namespaces. Private namespaces
+# are for user's personal mails. Shared namespaces are for accessing other
+# users' mailboxes that have been shared. Public namespaces are for shared
+# mailboxes that are managed by sysadmin. If you create any shared or public
+# namespaces you'll typically want to enable ACL plugin also, otherwise all
+# users can access all the shared mailboxes, assuming they have permissions
+# on filesystem level to do so.
+#
+# REMEMBER: If you add any namespaces, the default namespace must be added
+# explicitly, ie. mail_location does nothing unless you have a namespace
+# without a location setting. Default namespace is simply done by having a
+# namespace with empty prefix.
+#namespace {
+# Namespace type: private, shared or public
+#type = private
+
+# Hierarchy separator to use. You should use the same separator for all
+# namespaces or some clients get confused. '/' is usually a good one.
+# The default however depends on the underlying mail storage format.
+#separator =
+
+# Prefix required to access this namespace. This needs to be different for
+# all namespaces. For example "Public/".
+#prefix =
+
+# Physical location of the mailbox. This is in same format as
+# mail_location, which is also the default for it.
+#location =
+
+# There can be only one INBOX, and this setting defines which namespace
+# has it.
+#inbox = no
+
+# If namespace is hidden, it's not advertised to clients via NAMESPACE
+# extension. You'll most likely also want to set list=no. This is mostly
+# useful when converting from another server with different namespaces which
+# you want to deprecate but still keep working. For example you can create
+# hidden namespaces with prefixes "~/mail/", "~%u/mail/" and "mail/".
+#hidden = no
+
+# Show the mailboxes under this namespace with LIST command. This makes the
+# namespace visible for clients that don't support NAMESPACE extension.
+# "children" value lists child mailboxes, but hides the namespace prefix.
+#list = yes
+
+# Namespace handles its own subscriptions. If set to "no", the parent
+# namespace handles them (empty prefix should always have this as "yes")
+#subscriptions = yes
+#}
+
+# Example shared namespace configuration
+#namespace {
+#type = shared
+#separator = /
+
+# Mailboxes are visible under "shared/user@domain/"
+# %%n, %%d and %%u are expanded to the destination user.
+#prefix = shared/%%u/
+
+# Mail location for other users' mailboxes. Note that %variables and ~/
+# expands to the logged in user's data. %%n, %%d, %%u and %%h expand to the
+# destination user's data.
+#location = maildir:%%h/Maildir:INDEX=~/Maildir/shared/%%u
+
+# Use the default namespace for saving subscriptions.
+#subscriptions = no
+
+# List the shared/ namespace only if there are visible shared mailboxes.
+#list = children
+#}
+
+# System user and group used to access mails. If you use multiple, userdb
+# can override these by returning uid or gid fields. You can use either numbers
+# or names. <doc/wiki/UserIds.txt>
+#mail_uid =
+#mail_gid =
+
+# Group to enable temporarily for privileged operations. Currently this is
+# used only with INBOX when either its initial creation or dotlocking fails.
+# Typically this is set to "mail" to give access to /var/mail.
+mail_privileged_group = mail
+
+# Grant access to these supplementary groups for mail processes. Typically
+# these are used to set up access to shared mailboxes. Note that it may be
+# dangerous to set these if users can create symlinks (e.g. if "mail" group is
+# set here, ln -s /var/mail ~/mail/var could allow a user to delete others'
+# mailboxes, or ln -s /secret/shared/box ~/mail/mybox would allow reading it).
+#mail_access_groups =
+
+# Allow full filesystem access to clients. There's no access checks other than
+# what the operating system does for the active UID/GID. It works with both
+# maildir and mboxes, allowing you to prefix mailboxes names with eg. /path/
+# or ~user/.
+#mail_full_filesystem_access = no
+
+##
+## Mail processes
+##
+
+# Don't use mmap() at all. This is required if you store indexes to shared
+# filesystems (NFS or clustered filesystem).
+#mmap_disable = no
+
+# Rely on O_EXCL to work when creating dotlock files. NFS supports O_EXCL
+# since version 3, so this should be safe to use nowadays by default.
+#dotlock_use_excl = yes
+
+# When to use fsync() or fdatasync() calls:
+#   optimized (default): Whenever necessary to avoid losing important data
+#   always: Useful with e.g. NFS when write()s are delayed
+#   never: Never use it (best performance, but crashes can lose data)
+#mail_fsync = optimized
+
+# Mail storage exists in NFS. Set this to yes to make Dovecot flush NFS caches
+# whenever needed. If you're using only a single mail server this isn't needed.
+#mail_nfs_storage = no
+# Mail index files also exist in NFS. Setting this to yes requires
+# mmap_disable=yes and fsync_disable=no.
+#mail_nfs_index = no
+
+# Locking method for index files. Alternatives are fcntl, flock and dotlock.
+# Dotlocking uses some tricks which may create more disk I/O than other locking
+# methods. NFS users: flock doesn't work, remember to change mmap_disable.
+#lock_method = fcntl
+
+# Directory in which LDA/LMTP temporarily stores incoming mails >128 kB.
+#mail_temp_dir = /tmp
+
+# Valid UID range for users, defaults to 500 and above. This is mostly
+# to make sure that users can't log in as daemons or other system users.
+# Note that denying root logins is hardcoded to dovecot binary and can't
+# be done even if first_valid_uid is set to 0.
+#first_valid_uid = 500
+#last_valid_uid = 0
+
+# Valid GID range for users, defaults to non-root/wheel. Users having
+# non-valid GID as primary group ID aren't allowed to log in. If user
+# belongs to supplementary groups with non-valid GIDs, those groups are
+# not set.
+#first_valid_gid = 1
+#last_valid_gid = 0
+
+# Maximum allowed length for mail keyword name. It's only forced when trying
+# to create new keywords.
+#mail_max_keyword_length = 50
+
+# ':' separated list of directories under which chrooting is allowed for mail
+# processes (ie. /var/mail will allow chrooting to /var/mail/foo/bar too).
+# This setting doesn't affect login_chroot, mail_chroot or auth chroot
+# settings. If this setting is empty, "/./" in home dirs are ignored.
+# WARNING: Never add directories here which local users can modify, that
+# may lead to root exploit. Usually this should be done only if you don't
+# allow shell access for users. <doc/wiki/Chrooting.txt>
+#valid_chroot_dirs =
+
+# Default chroot directory for mail processes. This can be overridden for
+# specific users in user database by giving /./ in user's home directory
+# (eg. /home/./user chroots into /home). Note that usually there is no real
+# need to do chrooting, Dovecot doesn't allow users to access files outside
+# their mail directory anyway. If your home directories are prefixed with
+# the chroot directory, append "/." to mail_chroot. <doc/wiki/Chrooting.txt>
+#mail_chroot =
+
+# UNIX socket path to master authentication server to find users.
+# This is used by imap (for shared users) and lda.
+#auth_socket_path = /var/run/dovecot/auth-userdb
+
+# Directory where to look up mail plugins.
+#mail_plugin_dir = /usr/lib/dovecot/modules
+
+# Space separated list of plugins to load for all services. Plugins specific to
+# IMAP, LDA, etc. are added to this list in their own .conf files.
+#mail_plugins =
+
+##
+## Mailbox handling optimizations
+##
+
+# The minimum number of mails in a mailbox before updates are done to cache
+# file. This allows optimizing Dovecot's behavior to do less disk writes at
+# the cost of more disk reads.
+#mail_cache_min_mail_count = 0
+
+# When IDLE command is running, mailbox is checked once in a while to see if
+# there are any new mails or other changes. This setting defines the minimum
+# time to wait between those checks. Dovecot can also use dnotify, inotify and
+# kqueue to find out immediately when changes occur.
+#mailbox_idle_check_interval = 30 secs
+
+# Save mails with CR+LF instead of plain LF. This makes sending those mails
+# take less CPU, especially with sendfile() syscall with Linux and FreeBSD.
+# But it also creates a bit more disk I/O which may just make it slower.
+# Also note that if other software reads the mboxes/maildirs, they may handle
+# the extra CRs wrong and cause problems.
+#mail_save_crlf = no
+
+##
+## Maildir-specific settings
+##
+
+# By default LIST command returns all entries in maildir beginning with a dot.
+# Enabling this option makes Dovecot return only entries which are directories.
+# This is done by stat()ing each entry, so it causes more disk I/O.
+# (For systems setting struct dirent->d_type, this check is free and it's
+# done always regardless of this setting)
+#maildir_stat_dirs = no
+
+# When copying a message, do it with hard links whenever possible. This makes
+# the performance much better, and it's unlikely to have any side effects.
+#maildir_copy_with_hardlinks = yes
+
+# Assume Dovecot is the only MUA accessing Maildir: Scan cur/ directory only
+# when its mtime changes unexpectedly or when we can't find the mail otherwise.
+#maildir_very_dirty_syncs = no
+
+##
+## mbox-specific settings
+##
+
+# Which locking methods to use for locking mbox. There are four available:
+#  dotlock: Create <mailbox>.lock file. This is the oldest and most NFS-safe
+#           solution. If you want to use /var/mail/ like directory, the users
+#           will need write access to that directory.
+#  dotlock_try: Same as dotlock, but if it fails because of permissions or
+#               because there isn't enough disk space, just skip it.
+#  fcntl  : Use this if possible. Works with NFS too if lockd is used.
+#  flock  : May not exist in all systems. Doesn't work with NFS.
+#  lockf  : May not exist in all systems. Doesn't work with NFS.
+#
+# You can use multiple locking methods; if you do the order they're declared
+# in is important to avoid deadlocks if other MTAs/MUAs are using multiple
+# locking methods as well. Some operating systems don't allow using some of
+# them simultaneously.
+#mbox_read_locks = fcntl
+#mbox_write_locks = dotlock fcntl
+
+# Maximum time to wait for lock (all of them) before aborting.
+#mbox_lock_timeout = 5 mins
+
+# If dotlock exists but the mailbox isn't modified in any way, override the
+# lock file after this much time.
+#mbox_dotlock_change_timeout = 2 mins
+
+# When mbox changes unexpectedly we have to fully read it to find out what
+# changed. If the mbox is large this can take a long time. Since the change
+# is usually just a newly appended mail, it'd be faster to simply read the
+# new mails. If this setting is enabled, Dovecot does this but still safely
+# fallbacks to re-reading the whole mbox file whenever something in mbox isn't
+# how it's expected to be. The only real downside to this setting is that if
+# some other MUA changes message flags, Dovecot doesn't notice it immediately.
+# Note that a full sync is done with SELECT, EXAMINE, EXPUNGE and CHECK
+# commands.
+#mbox_dirty_syncs = yes
+
+# Like mbox_dirty_syncs, but don't do full syncs even with SELECT, EXAMINE,
+# EXPUNGE or CHECK commands. If this is set, mbox_dirty_syncs is ignored.
+#mbox_very_dirty_syncs = no
+
+# Delay writing mbox headers until doing a full write sync (EXPUNGE and CHECK
+# commands and when closing the mailbox). This is especially useful for POP3
+# where clients often delete all mails. The downside is that our changes
+# aren't immediately visible to other MUAs.
+#mbox_lazy_writes = yes
+
+# If mbox size is smaller than this (e.g. 100k), don't write index files.
+# If an index file already exists it's still read, just not updated.
+#mbox_min_index_size = 0
+
+##
+## mdbox-specific settings
+##
+
+# Maximum dbox file size until it's rotated.
+#mdbox_rotate_size = 2M
+
+# Maximum dbox file age until it's rotated. Typically in days. Day begins
+# from midnight, so 1d = today, 2d = yesterday, etc. 0 = check disabled.
+#mdbox_rotate_interval = 0
+
+# When creating new mdbox files, immediately preallocate their size to
+# mdbox_rotate_size. This setting currently works only in Linux with some
+# filesystems (ext4, xfs).
+#mdbox_preallocate_space = no
+
+##
+## Mail attachments
+##
+
+# sdbox and mdbox support saving mail attachments to external files, which
+# also allows single instance storage for them. Other backends don't support
+# this for now.
+
+# WARNING: This feature hasn't been tested much yet. Use at your own risk.
+
+# Directory root where to store mail attachments. Disabled, if empty.
+#mail_attachment_dir =
+
+# Attachments smaller than this aren't saved externally. It's also possible to
+# write a plugin to disable saving specific attachments externally.
+#mail_attachment_min_size = 128k
+
+# Filesystem backend to use for saving attachments:
+#  posix : No SiS done by Dovecot (but this might help FS's own deduplication)
+#  sis posix : SiS with immediate byte-by-byte comparison during saving
+#  sis-queue posix : SiS with delayed comparison and deduplication
+#mail_attachment_fs = sis posix
+
+# Hash format to use in attachment filenames. You can add any text and
+# variables: %{md4}, %{md5}, %{sha1}, %{sha256}, %{sha512}, %{size}.
+# Variables can be truncated, e.g. %{sha256:80} returns only first 80 bits
+#mail_attachment_hash = %{sha1}</pre>
+
+<p>Save your changes to the /etc/dovecot/conf.d/10-mail.conf file.</p>
+
+<p>Enter the following command to verify the permissions for /data/mail:</p>
+
+<pre>ls -ld /data/mail</pre>
+
+<p>Verify that the permissions for /data/mail are as follows:</p>
+
+<pre>drwxrwsr-x 2 root mail 4096 Mar  6 15:08 /data/mail</pre>
+
+<p>Create the /data/mail/vhosts/ folder and the folder(s) for each of your domains by entering the following command:</p>
+
+<pre>mkdir -p /data/mail/vhosts/mysite.com</pre>
+
+<p>Create the vmail user with a user and group id of 5000 by entering the following commands, one by one. This user will be in charge of reading mail from the server.</p>
+
+<pre>groupadd -g 5000 vmail
+	useradd -g vmail -u 5000 vmail -d /data/mail</pre>
+
+<p>Change the owner of the /data/mail/ folder and its contents to belong to vmail by entering the following command:</p>
+
+<pre>chown -R vmail:vmail /data/mail</pre>
+
+<p>Open the user authentication file for editing by entering the command below. You need to set up authentication so only authenticated users can read mail on the server. You also need to configure an authentication socket for outgoing mail, since we told Postfix that Dovecot was going to handle that. There are a few different files related to authentication that get included in each other.</p>
+
+<pre>nano /etc/dovecot/conf.d/10-auth.conf</pre>
+
+<p>Here is a copy of my 10-auth.conf:</p>
+
+<pre>
+##
+## Authentication processes
+##
+
+# Disable LOGIN command and all other plaintext authentications unless
+# SSL/TLS is used (LOGINDISABLED capability). Note that if the remote IP
+# matches the local IP (ie. you're connecting from the same computer), the
+# connection is considered secure and plaintext authentication is allowed.
+disable_plaintext_auth = yes
+
+# Authentication cache size (e.g. 10M). 0 means it's disabled. Note that
+# bsdauth, PAM and vpopmail require cache_key to be set for caching to be used.
+#auth_cache_size = 0
+# Time to live for cached data. After TTL expires the cached record is no
+# longer used, *except* if the main database lookup returns internal failure.
+# We also try to handle password changes automatically: If user's previous
+# authentication was successful, but this one wasn't, the cache isn't used.
+# For now this works only with plaintext authentication.
+#auth_cache_ttl = 1 hour
+# TTL for negative hits (user not found, password mismatch).
+# 0 disables caching them completely.
+#auth_cache_negative_ttl = 1 hour
+
+# Space separated list of realms for SASL authentication mechanisms that need
+# them. You can leave it empty if you don't want to support multiple realms.
+# Many clients simply use the first one listed here, so keep the default realm
+# first.
+#auth_realms =
+
+# Default realm/domain to use if none was specified. This is used for both
+# SASL realms and appending @domain to username in plaintext logins.
+#auth_default_realm =
+
+# List of allowed characters in username. If the user-given username contains
+# a character not listed in here, the login automatically fails. This is just
+# an extra check to make sure user can't exploit any potential quote escaping
+# vulnerabilities with SQL/LDAP databases. If you want to allow all characters,
+# set this value to empty.
+#auth_username_chars = abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890.-_@
+
+# Username character translations before it's looked up from databases. The
+# value contains series of from -> to characters. For example "#@/@" means
+# that '#' and '/' characters are translated to '@'.
+#auth_username_translation =
+
+# Username formatting before it's looked up from databases. You can use
+# the standard variables here, eg. %Lu would lowercase the username, %n would
+# drop away the domain if it was given, or "%n-AT-%d" would change the '@' into
+# "-AT-". This translation is done after auth_username_translation changes.
+#auth_username_format = %Lu
+
+# If you want to allow master users to log in by specifying the master
+# username within the normal username string (ie. not using SASL mechanism's
+# support for it), you can specify the separator character here. The format
+# is then <username><separator><master username>. UW-IMAP uses "*" as the
+# separator, so that could be a good choice.
+#auth_master_user_separator =
+
+# Username to use for users logging in with ANONYMOUS SASL mechanism
+#auth_anonymous_username = anonymous
+
+# Maximum number of dovecot-auth worker processes. They're used to execute
+# blocking passdb and userdb queries (eg. MySQL and PAM). They're
+# automatically created and destroyed as needed.
+#auth_worker_max_count = 30
+
+# Host name to use in GSSAPI principal names. The default is to use the
+# name returned by gethostname(). Use "$ALL" (with quotes) to allow all keytab
+# entries.
+#auth_gssapi_hostname =
+
+# Kerberos keytab to use for the GSSAPI mechanism. Will use the system
+# default (usually /etc/krb5.keytab) if not specified. You may need to change
+# the auth service to run as root to be able to read this file.
+#auth_krb5_keytab =
+
+# Do NTLM and GSS-SPNEGO authentication using Samba's winbind daemon and
+# ntlm_auth helper. <doc/wiki/Authentication/Mechanisms/Winbind.txt>
+#auth_use_winbind = no
+
+# Path for Samba's ntlm_auth helper binary.
+#auth_winbind_helper_path = /usr/bin/ntlm_auth
+
+# Time to delay before replying to failed authentications.
+#auth_failure_delay = 2 secs
+
+# Require a valid SSL client certificate or the authentication fails.
+#auth_ssl_require_client_cert = no
+
+# Take the username from client's SSL certificate, using
+# X509_NAME_get_text_by_NID() which returns the subject's DN's
+# CommonName.
+#auth_ssl_username_from_cert = no
+
+# Space separated list of wanted authentication mechanisms:
+#   plain login digest-md5 cram-md5 ntlm rpa apop anonymous gssapi otp skey
+#   gss-spnego
+# NOTE: See also disable_plaintext_auth setting.
+auth_mechanisms = plain login
+
+##
+## Password and user databases
+##
+
+#
+# Password database is used to verify user's password (and nothing more).
+# You can have multiple passdbs and userdbs. This is useful if you want to
+# allow both system users (/etc/passwd) and virtual users to login without
+# duplicating the system users into virtual database.
+#
+# <doc/wiki/PasswordDatabase.txt>
+#
+# User database specifies where mails are located and what user/group IDs
+# own them. For single-UID configuration use "static" userdb.
+#
+# <doc/wiki/UserDatabase.txt>
+
+#!include auth-deny.conf.ext
+#!include auth-master.conf.ext
+
+#!include auth-system.conf.ext
+!include auth-sql.conf.ext
+#!include auth-ldap.conf.ext
+#!include auth-passwdfile.conf.ext
+#!include auth-checkpassword.conf.ext
+#!include auth-vpopmail.conf.ext
+#!include auth-static.conf.ext</pre>
+
+<p>These are three most important lines. I didn't touch the rest of the default file:</p>
+
+<pre>
+disable_plaintext_auth = yes
+auth_mechanisms = plain login
+#!include auth-system.conf.ext
+!include auth-sql.conf.ext</pre>
+
+<p>Save your changes to the /etc/dovecot/conf.d/10-auth.conf file.</p>
+
+<p>Now you need to create the /etc/dovecot/conf.d/auth-sql.conf.ext file with your authentication information. Enter the following command to create the new file:</p>
+
+<pre>nano /etc/dovecot/conf.d/auth-sql.conf.ext</pre>
+
+<p>Paste the following lines into in the new file:</p>
+
+<pre>passdb {
+  driver = sql
+  args = /etc/dovecot/dovecot-sql.conf.ext
+}
+userdb {
+  driver = static
+  args = uid=vmail gid=vmail home=/data/mail/vhosts/%d/%n
+}</pre>
+
+<p>Save your changes to the /etc/dovecot/conf.d/auth-sql.conf.ext file.</p>
+
+<p>Update the /etc/dovecot/dovecot-sql.conf.ext file with our custom MySQL connection information. Open the file for editing by entering the following command:</p>
+
+<pre>nano /etc/dovecot/dovecot-sql.conf.ext</pre>
+
+<p>This is my entire file:</p>
+
+<pre>
+# This file is opened as root, so it should be owned by root and mode 0600.
+#
+# http://wiki2.dovecot.org/AuthDatabase/SQL
+#
+# For the sql passdb module, you'll need a database with a table that
+# contains fields for at least the username and password. If you want to
+# use the user@domain syntax, you might want to have a separate domain
+# field as well.
+#
+# If your users all have the same uig/gid, and have predictable home
+# directories, you can use the static userdb module to generate the home
+# dir based on the username and domain. In this case, you won't need fields
+# for home, uid, or gid in the database.
+#
+# If you prefer to use the sql userdb module, you'll want to add fields
+# for home, uid, and gid. Here is an example table:
+#
+# CREATE TABLE users (
+#     username VARCHAR(128) NOT NULL,
+#     domain VARCHAR(128) NOT NULL,
+#     password VARCHAR(64) NOT NULL,
+#     home VARCHAR(255) NOT NULL,
+#     uid INTEGER NOT NULL,
+#     gid INTEGER NOT NULL,
+#     active CHAR(1) DEFAULT 'Y' NOT NULL
+# );
+
+# Database driver: mysql, pgsql, sqlite
+driver = mysql
+
+# Database connection string. This is driver-specific setting.
+#
+# HA / round-robin load-balancing is supported by giving multiple host
+# settings, like: host=sql1.host.org host=sql2.host.org
+#
+# pgsql:
+#   For available options, see the PostgreSQL documention for the
+#   PQconnectdb function of libpq.
+#   Use maxconns=n (default 5) to change how many connections Dovecot can
+#   create to pgsql.
+#
+# mysql:
+#   Basic options emulate PostgreSQL option names:
+#     host, port, user, password, dbname
+#
+#   But also adds some new settings:
+#     client_flags        - See MySQL manual
+#     ssl_ca, ssl_ca_path - Set either one or both to enable SSL
+#     ssl_cert, ssl_key   - For sending client-side certificates to server
+#     ssl_cipher          - Set minimum allowed cipher security (default: HIGH)
+#     option_file         - Read options from the given file instead of
+#                           the default my.cnf location
+#     option_group        - Read options from the given group (default: client)
+#
+#   You can connect to UNIX sockets by using host: host=/var/run/mysql.sock
+#   Note that currently you can't use spaces in parameters.
+#
+# sqlite:
+#   The path to the database file.
+#
+# Examples:
+#   connect = host=192.168.1.1 dbname=users
+#   connect = host=sql.mysite.com dbname=virtual user=virtual password=blarg
+#   connect = /etc/dovecot/authdb.sqlite
+#
+connect = host=127.0.0.1 dbname=mailserver user=mailuser password=mailuserpass
+
+# Default password scheme.
+#
+# List of supported schemes is in
+# http://wiki2.dovecot.org/Authentication/PasswordSchemes
+#
+default_pass_scheme = SHA512-CRYPT
+
+# passdb query to retrieve the password. It can return fields:
+#   password - The user's password. This field must be returned.
+#   user - user@domain from the database. Needed with case-insensitive lookups.
+#   username and domain - An alternative way to represent the "user" field.
+#
+# The "user" field is often necessary with case-insensitive lookups to avoid
+# e.g. "name" and "nAme" logins creating two different mail directories. If
+# your user and domain names are in separate fields, you can return "username"
+# and "domain" fields instead of "user".
+#
+# The query can also return other fields which have a special meaning, see
+# http://wiki2.dovecot.org/PasswordDatabase/ExtraFields
+#
+# Commonly used available substitutions (see http://wiki2.dovecot.org/Variables
+# for full list):
+#   %u = entire user@domain
+#   %n = user part of user@domain
+#   %d = domain part of user@domain
+#
+# Note that these can be used only as input to SQL query. If the query outputs
+# any of these substitutions, they're not touched. Otherwise it would be
+# difficult to have eg. usernames containing '%' characters.
+#
+# Example:
+#   password_query = SELECT userid AS user, pw AS password \
+#     FROM users WHERE userid = '%u' AND active = 'Y'
+#
+#password_query = \
+#  SELECT username, domain, password \
+#  FROM users WHERE username = '%n' AND domain = '%d'
+password_query = SELECT email as user, password FROM virtual_users WHERE email='%u';
+
+# userdb query to retrieve the user information. It can return fields:
+#   uid - System UID (overrides mail_uid setting)
+#   gid - System GID (overrides mail_gid setting)
+#   home - Home directory
+#   mail - Mail location (overrides mail_location setting)
+#
+# None of these are strictly required. If you use a single UID and GID, and
+# home or mail directory fits to a template string, you could use userdb static
+# instead. For a list of all fields that can be returned, see
+# http://wiki2.dovecot.org/UserDatabase/ExtraFields
+#
+# Examples:
+#   user_query = SELECT home, uid, gid FROM users WHERE userid = '%u'
+#   user_query = SELECT dir AS home, user AS uid, group AS gid FROM users where userid = '%u'
+#   user_query = SELECT home, 501 AS uid, 501 AS gid FROM users WHERE userid = '%u'
+#
+#user_query = \
+#  SELECT home, uid, gid \
+#  FROM users WHERE username = '%n' AND domain = '%d'
+
+# If you wish to avoid two SQL lookups (passdb + userdb), you can use
+# userdb prefetch instead of userdb sql in dovecot.conf. In that case you'll
+# also have to return userdb fields in password_query prefixed with "userdb_"
+# string. For example:
+#password_query = \
+#  SELECT userid AS user, password, \
+#    home AS userdb_home, uid AS userdb_uid, gid AS userdb_gid \
+#  FROM users WHERE userid = '%u'
+
+# Query to get a list of all usernames.
+#iterate_query = SELECT username AS user FROM users</pre>
+
+<p>These are the important lines:</p>
+
+<pre>
+driver = mysql
+connect = host=127.0.0.1 dbname=mailserver user=mailuser password=mailuserpass</pre>
+
+<p>Make sure to change mailuser and mailuserpass to your own MySQL information</p>
+
+<pre>
+default_pass_scheme = SHA512-CRYPT
+password_query = SELECT email as user, password FROM virtual_users WHERE email='%u';</pre>
+
+<p>Save your changes to the /etc/dovecot/dovecot-sql.conf.ext file.</p>
+
+<p>Change the owner and group of the /etc/dovecot/ directory to vmail and dovecot by entering the following command:</p>
+
+<pre>chown -R vmail:dovecot /etc/dovecot</pre>
+
+<p>Change the permissions on the /etc/dovecot/ directory by entering the following command:</p>
+
+<pre>chmod -R o-rwx /etc/dovecot</pre>
+
+<p>Open the sockets configuration file by entering the following command. You'll change the settings in this file to set up the LMTP socket for local mail delivery, and the auth socket for authentication. Postfix uses these sockets to connect to Dovecot's services.</p>
+
+<pre>sudo nano /etc/dovecot/conf.d/10-master.conf</pre>
+
+<p>This is my entire file:</p>
+
+<pre>
+#default_process_limit = 100
+#default_client_limit = 1000
+
+# Default VSZ (virtual memory size) limit for service processes. This is mainly
+# intended to catch and kill processes that leak memory before they eat up
+# everything.
+#default_vsz_limit = 256M
+
+# Login user is internally used by login processes. This is the most untrusted
+# user in Dovecot system. It shouldn't have access to anything at all.
+#default_login_user = dovenull
+
+# Internal user is used by unprivileged processes. It should be separate from
+# login user, so that login processes can't disturb other processes.
+#default_internal_user = dovecot
+
+service imap-login {
+  inet_listener imap {
+    port = 0
+  }
+  inet_listener imaps {
+    #port = 993
+    #ssl = yes
+  }
+
+  # Number of connections to handle before starting a new process. Typically
+  # the only useful values are 0 (unlimited) or 1. 1 is more secure, but 0
+  # is faster. <doc/wiki/LoginProcess.txt>
+  #service_count = 1
+
+  # Number of processes to always keep waiting for more connections.
+  #process_min_avail = 0
+
+  # If you set service_count=0, you probably need to grow this.
+  #vsz_limit = 64M
+}
+
+service pop3-login {
+  inet_listener pop3 {
+    port = 0
+  }
+  inet_listener pop3s {
+    #port = 995
+    #ssl = yes
+  }
+}
+service lmtp {
+ unix_listener /var/spool/postfix/private/dovecot-lmtp {
+   mode = 0600
+   user = postfix
+   group = postfix
+  }
+  # Create inet listener only if you can't use the above UNIX socket
+  #inet_listener lmtp {
+    # Avoid making LMTP visible for the entire internet
+    #address =
+    #port =
+  #}
+}
+
+service imap {
+  # Most of the memory goes to mmap()ing files. You may need to increase this
+  # limit if you have huge mailboxes.
+  #vsz_limit = 256M
+
+  # Max. number of IMAP processes (connections)
+  #process_limit = 1024
+}
+
+service pop3 {
+  # Max. number of POP3 processes (connections)
+  #process_limit = 1024
+}
+service auth {
+  # auth_socket_path points to this userdb socket by default. It's typically
+  # used by dovecot-lda, doveadm, possibly imap process, etc. Its default
+  # permissions make it readable only by root, but you may need to relax these
+  # permissions. Users that have access to this socket are able to get a list
+  # of all usernames and get results of everyone's userdb lookups.
+  unix_listener /var/spool/postfix/private/auth {
+    mode = 0666
+    user = postfix
+    group = postfix
+  }
+
+  unix_listener auth-userdb {
+    mode = 0600
+    user = vmail
+    #group = vmail
+  }
+
+  # Postfix smtp-auth
+  #unix_listener /var/spool/postfix/private/auth {
+  #  mode = 0666
+  #}
+
+  # Auth process is run as this user.
+  user = dovecot
+}
+
+service auth-worker {
+  # Auth worker process is run as root by default, so that it can access
+  # /etc/shadow. If this isn't necessary, the user should be changed to
+  # $default_internal_user.
+  user = vmail
+}
+
+service dict {
+  # If dict proxy is used, mail processes should have access to its socket.
+  # For example: mode=0660, group=vmail and global mail_access_groups=vmail
+  unix_listener dict {
+    #mode = 0600
+    #user =
+    #group =
+  }
+}</pre>
+
+<p>Most important is that we have disabled unencrypted IMAP and POP3 by setting the protocols' ports to 0. This will force your users to use secure IMAP or secure POP on 993 or 995 when they configure their mail clients. Make sure you leave the secure versions alone - imaps and pop3s - so their ports still work. The default settings for imaps and pop3s are fine. You can leave the port lines commented out, as the default ports are the standard 993 and 995.
+I made a few other changes suggested by Linode's guide in sections: service auth-worker, service auth, service lmtp.</p>
+
+<p>Save your changes to the /etc/dovecot/conf.d/10-master.conf file.</p>
+
+<p>Open the SSL configuration file for editing by entering the following command. This is where we tell Dovecot where to find our SSL certificate and key, and any other SSL-related parameters.</p>
+
+<pre>sudo nano /etc/dovecot/conf.d/10-ssl.conf</pre>
+
+<p>This is my entire file:</p>
+
+<pre>
+	##
+## SSL settings
+##
+
+# SSL/TLS support: yes, no, required. <doc/wiki/SSL.txt>
+ssl = required
+
+# PEM encoded X.509 SSL/TLS certificate and private key. They're opened before
+# dropping root privileges, so keep the key file unreadable by anyone but
+# root. Included doc/mkcert.sh can be used to easily generate self-signed
+# certificate, just make sure to update the domains in dovecot-openssl.cnf
+	ssl_cert = &lt;/etc/nginx/ssl/cert_chain.crt
+	ssl_key = &lt;/etc/nginx/ssl/mysite.key
+
+# If key file is password protected, give the password here. Alternatively
+# give it when starting dovecot with -p parameter. Since this file is often
+# world-readable, you may want to place this setting instead to a different
+# root owned 0600 file by using ssl_key_password = &lt;path.
+#ssl_key_password =
+
+# PEM encoded trusted certificate authority. Set this only if you intend to use
+# ssl_verify_client_cert=yes. The file should contain the CA certificate(s)
+# followed by the matching CRL(s). (e.g. ssl_ca = &lt;/etc/ssl/certs/ca.pem)
+#ssl_ca =
+
+# Require that CRL check succeeds for client certificates.
+#ssl_require_crl = yes
+
+# Request client to send a certificate. If you also want to require it, set
+# auth_ssl_require_client_cert=yes in auth section.
+#ssl_verify_client_cert = no
+
+# Which field from certificate to use for username. commonName and
+# x500UniqueIdentifier are the usual choices. You'll also need to set
+# auth_ssl_username_from_cert=yes.
+#ssl_cert_username_field = commonName
+
+# How often to regenerate the SSL parameters file. Generation is quite CPU
+# intensive operation. The value is in hours, 0 disables regeneration
+# entirely.
+#ssl_parameters_regenerate = 168
+
+# SSL protocols to use
+ssl_protocols = !SSLv2 !SSLv3
+
+# SSL ciphers to use
+#ssl_cipher_list = ALL:!LOW:!SSLv2:!SSLv3:!EXP:!aNULL
+
+# SSL crypto device to use, for valid values run "openssl engine"
+#ssl_crypto_device = </pre>
+
+<p>Most important here is the line ssl = required and the paths to our certificates.
+But another very important difference in my file is the line for ssl_protocols. Make sure it looks like mine. That's protection against the POODLE attack. More on that at the end of this guide. But we might as well activate this protection now we're in this file.</p>
+
+<p>Save your changes to the /etc/dovecot/conf.d/10-ssl.conf file. Dovecot has been configured!</p>
+
+<p>Restart Dovecot by entering the following command:</p>
+
+<pre>sudo service dovecot restart</pre>
+
+<p>Set up a test account in an email client to make sure everything is working. You'll need to use the following parameters:</p>
+
+<ul>
+	<li>Your full email address, including the @mysite.com part, is your username.</li>
+	<li>Your password should be the one you added to the MySQL table for this email address.</li>
+	<li>The incoming and outgoing server names must be a domain that resolves to your Pi.</li>
+	<li>Both the incoming and outgoing servers require authentication and SSL encryption.</li>
+	<li>You should use Port 993 for secure IMAP, Port 995 for secure POP3, and Port 25 with SSL for SMTP.</li>
+</ul>
+
+<p>Monitor your mail log with the following command in your Pi:</p>
+
+<pre>sudo tail -f /var/log/mail.log</pre>
+
+<p>Send and email to this account and see if everything goes fine. If not? Backtrack a little. I had some issues with connecting to MySQL at first. It appeared I had the login credentials wrong in one file.</p>
+
+<p>If you want to add more e-mailusers and domains, please read the <href="https://www.linode.com/docs/email/postfix/email-with-postfix-dovecot-and-mysql#adding-new-domains-email-addresses-and-aliases" alt="Adding new domains">last paragraph in Linode's guide</a>. It is beyond the scope of my step-by-step-combining-several-guides-from-great-people-to-get-my-Pi-working.</p>
+
+</article>
+</section>
+
+<section id="third" class="container">
+<article class="work">
+<h2 id="12.0" name="12.0">Set up Owncloud in a subdirectory of a domain on Raspberry Pi</h2>
+
+<p>Here we are. We have a secure web server, email server and now it is time to get Owncloud up and running. This did cost me a few headaches. Mainly because I chose Nginx as my web server. Owncloud is officially optimized for Apache (at least that's what I read). But it is totally possible to do what I want. We have to install Owncloud manually though. Let's start.</p>
+
+<p>I used two guides for this setup, plus lots of experimenting with the Nginx VirtualHost File. The first guide is very recent, made by Angelaccio Elvis, with exactly the title I was looking for: <a href="http://www.aelog.org/install-owncloud-in-a-subdirectory-using-nginx/" alt="Install ownCloud in a subdirectory using nginx">Install ownCloud in a subdirectory using nginx</a></p>
+
+<p>Angellaccio refers to another guide I found quite useful. This guide comes from Techjawab.com and is called: <a href="http://www.techjawab.com/2014/08/how-to-setup-owncloud-7-on-raspberry-pi.html" alt="How to set up ownCloud 7 on Raspberry Pi">How to set up ownCloud 7 on Raspberry Pi</a>, written by Abhishek Mitra.</p>
+
+<h3 id="12.1" name="12.1">I repeat: My installation is for Owncloud as subdirectory of our previous setup website</h3>
+
+<p>This guide is written to install Owncloud in a subdirectory of a website on our USB Data disk. Owncloud's own website offers a manual to install Owncloud in the root of a Nginx based web server.<p>
+
+<p>In my case the location of the subdirectory is:</p>
+
+<pre>/data/mysite.com/www/owncloud</pre>
+
+<p>We need to rewrite our urls for owncloud to understand this. In Nginx we can do that in the VirtualHost File itself.</p>
+
+<h3 id="12.2" name="12.2">Install a few more packages</h3>
+
+<p>I just copied the entire list posted by Abhishek. If there are packages we already have installed it will just skip them. The missing ones will be installed. I'll probably rewrite this once I'm gonna test my own guide on a fresh Raspberry Pi installation. So lets type:</p>
+
+<pre>sudo apt-get install nginx openssl ssl-cert php5-cli php5-sqlite php5-gd php5-common php5-cgi sqlite3 php-pear php-apc curl libapr1 libtool curl libcurl4-openssl-dev php-xml-parser php5 php5-dev php5-gd php5-fpm memcached php5-memcache varnish</pre>
+
+<h3 id="12.3" name="12.3">Configuring php</h3>
+
+<p>Type:</p>
+
+<pre>sudo nano /etc/php5/fpm/php.ini</pre>
+
+<p>Change the following values:</p>
+
+<pre>upload_max_filesize = 1000M
+    post_max_size = 1000M</pre>
+
+<p>I changed it to 10G. As I have some ISO's I like to store in Owncloud.</p>
+
+<p>Type:</p>
+
+<pre>sudo nano /etc/dphys-swapfile</pre>
+
+<p>Change the line:</p>
+
+<pre> CONF_SWAPSIZE=100</pre>
+
+<p>to</p>
+
+<pre>CONF_SWAPSIZE=512</pre>
+
+<p>Restart webserver and php:</p>
+
+<pre>sudo /etc/init.d/php5-fpm restart
+	sudo /etc/init.d/nginx restart</pre>
+
+<h3 id="12.4" name="12.4">Review and change the Nginx VirtualHost file</h3>
+
+<p>We have to change a few bits in our VirtualHost File. At the same time everything else we made has to keep working. I will post my own Host file. It took me a while to figure it out. My host file is based on the file written in the first guide</p>
+
+<pre>
+upstream php-handler {
+    #server 127.0.0.1:9000;
+    server unix:/var/run/php5-fpm.sock;
+}
+
+server {
+
+    listen 80;
+    server_name mysite.com.local mysite.com www.mysite.com;
+    return 301 https://$server_name$request_uri; # enforce https
+}
+
+server {
+    listen 443 ssl;
+    server_name mysite.com.local www.mysite.com mysite.com;
+
+    ssl_certificate          /etc/nginx/ssl/cert_chain.crt;
+    ssl_certificate_key      /etc/nginx/ssl/mysite.key;
+
+    root /data/mysite.com/www;
+    index index.php index.html index.html;
+
+    error_page 404 /404.html;
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /data/mysite.com/www;
+    }
+
+    # Error & Access logs
+    error_log /data/mysite.com/logs/error.log error;
+    access_log /data/mysite.com/logs/access.log;
+
+    client_max_body_size 10G; # set max upload size
+    fastcgi_buffers 64 4K;
+
+    # ownCloud blacklist
+    location ~ ^/owncloud/(?:\.htaccess|data|config|db_structure\.xml|README) {
+        deny all;
+        error_page 403 = /owncloud/core/templates/403.php;
+    }
+
+    location / {
+        index index.html index.php;
+    }
+
+    location /owncloud/ {
+        error_page 403 = /owncloud/core/templates/403.php;
+        error_page 404 = /owncloud/core/templates/404.php;
+
+        rewrite ^/owncloud/caldav(.*)$ /remote.php/caldav$1 redirect;
+        rewrite ^/owncloud/carddav(.*)$ /remote.php/carddav$1 redirect;
+        rewrite ^/owncloud/webdav(.*)$ /remote.php/webdav$1 redirect;
+
+        rewrite ^(/owncloud/core/doc[^\/]+/)$ $1/index.html;
+
+        # The following rules are only needed with webfinger
+        rewrite ^/owncloud/.well-known/host-meta /public.php?service=host-meta last;
+        rewrite ^/owncloud/.well-known/host-meta.json /public.php?service=host-meta-json last;
+        rewrite ^/owncloud/.well-known/carddav /remote.php/carddav/ redirect;
+        rewrite ^/owncloud/.well-known/caldav /remote.php/caldav/ redirect;
+
+        try_files $uri $uri/ index.php;
+    }
+    location ~ \.php(?:$|/) {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_param HTTPS on;
+        fastcgi_pass php-handler;
+    }
+
+    # Optional: set long EXPIRES header on static assets
+    location ~* ^/owncloud(/.+\.(jpg|jpeg|gif|bmp|ico|png|css|js|swf))$ {
+        expires 30d;
+        access_log off;  # Optional: Don't log access to assets
+    }
+
+    ######  phpMyAdmin  ############################################################
+    location /phpmyadmin {
+        root /usr/share/;
+        index index.php index.html index.htm;
+        location ~ ^/phpmyadmin/(.+\.php)$ {
+            root /usr/share/;
+            #include fastcgi-gen.conf;
+           fastcgi_pass unix:/var/run/php5-fpm.sock;
+            fastcgi_index index.php;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+            include /etc/nginx/fastcgi_params;
+            fastcgi_buffer_size 128k;
+            fastcgi_buffers 256 4k;
+            fastcgi_busy_buffers_size 256k;
+            fastcgi_temp_file_write_size 256k;
+            fastcgi_read_timeout 240;
+        }
+        location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+            root /usr/share/;
+        }
+    }
+    location /phpMyAdmin {
+        rewrite ^/* /phpmyadmin last;
+    }
+}</pre>
+
+<p>As you can see I added that upstream php-handler at the top. I call for it in the 443 server block. I also canceled non-secured connection. I commented out most of the 80 server block and added a rewrite to https.<p>
+
+<p>Compare the rest of the file with your Nginx VirtualHost with mine. You might as well copy my file entirely, I just inserted parts of Angelaccio's file.</p>
+
+<h3 id="12.5" name="12.5">Install ownCloud (version 8.0.0 used here)</h3>
+
+<pre>sudo mkdir -p /data/mysite.com/www/owncloud
+    cd /data/mysite.com/www
+    sudo wget https://download.owncloud.org/community/owncloud-8.0.0.tar.bz2
+    sudo tar xvf owncloud-8.0.0.tar.bz2
+    sudo chown -R www-data:www-data /data/mysite.com/www
+    rm -rf owncloud-8.0.0.tar.bz2</pre>
+
+<p>Go to your browser and type in: https://www.mysite.com/owncloud</p>
+
+<p>Pick a username and password for your Owncloud login.</p>
+
+<p>Check the data folder location. This should be: /data/mysite.com/www/owncloud/data.</p>
+
+<p>Select Advanced.</p>
+
+<p>Pick MySQL/MariaDB database.</p>
+
+<p>Fill in the MySQL credentials. In my current installation that would still be:</p>
+
+<pre>username: root
+	password: YOURMYSQLPASSWORD
+	database: owncloud
+	localhost</pre>
+
+<p>Press Finish Setup</p>
+
+<p>This should be it. Congratulations! Go transfer some files with the desktop client.</p>
+
+<h3 id="12.6" name="12.6">If the Owncloud installation goes wrong</h3>
+
+<p>If anything goes wrong, this last part is where it would go wrong. In that case start the owncloud installation over again and backtrack a little. Especially the Nginx VirtualHost configuration. Before you do, delete the current Owncloud files:</p>
+
+<pre>cd /data/mysite.com/www
+    rm -rf owncloud</pre>
+
+
+<p>Also remove the user from MySQL and drop the database. Login to PhpMyAdmin by going to: https://www.mysite.com/phpmyadmin</p>
+
+<p>Click on databases</p>
+
+<p>Select Owncloud and click Drop</p>
+
+<p>Click on tab SQL and type in the field:</p>
+
+<pre>drop user oc_usernameyouprovidedforowncloud@localhost</pre>
+
+<p>Click on go, and do this again for:</p>
+
+<pre>drop user oc_usernameyouprovidedforowncloud@'%'</pre>
+
+<p>Otherwise Owncloud can't create that same user again when you try installing it again.</p>
+
+</article>
+</section>
+
+<section id="second" class="container">
+<article class="movable">
+
+<h2 id="13.0" name="13.0">Some more security!</h2>
+
+<p>Most of the security I already covered. In this section I will just add information I find and implement later. One thing we can do immediately: Forward Secrecy.</p>
+
+<p>We'll start by making a dh2048.pem file. I should really make a dh4096.pem file, but that takes an enormous amount of time. I'll do that when I don't need so much access to my server. Let's make a dh2048.pem for now, that goes reasonably fast.</p>
+
+<p>Go to the nginx directory:</p>
+
+<pre>cd /etc/nginx</pre>
+
+<p>Type:</p>
+
+<pre>sudo openssl dhparam -out dh2048.pem 2048</pre>
+
+<p>Let the file build until it's finished. Now let's make a new file. In this file we will put all info we need for Perfect Forward Secrecy. Then we just load it into the Nginx configuration file. That way all our websites have this protection. (You can also do it per website; in the Nginx VirtualHost files.):</p>
+
+<pre>sudo nano perfect-forward-secrecy.conf</pre>
+
+<p>Copy and paste this into the new file:</p>
+
+<pre>ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+ssl_prefer_server_ciphers on;
+ssl_ciphers "ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS";
+#ssl_ciphers "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 EECDH EDH+aRSA RC4 !aN$
+ssl_dhparam dh2048.pem;
+add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";</pre>
+
+<p>Save and exit your perfect-forward-secrecy.conf file.</p>
+
+<p>As you can see I'm still experimenting with the best cipher string. I just comment out old ones and add new ones until I'm happy with the test results.</p>
+
+<p>Add this file to our Nginx configuration. Open Nginx.conf:</p>
+
+<pre>sudo nano /etc/nginx/nginx.conf</pre>
+
+<p>Scroll down to the closing bracket of the http section. Right before the } type this line:</p>
+
+<pre>include perfect-forward-secrecy.conf;</pre>
+
+<p>We already fixed this for Dovecot. Let's restart Nginx by typing:</p>
+
+<pre>sudo /etc/init.d/nginx reload</pre>
+
+</article>
+</section>
+
+<section id="third" class="container">
+<article class="work">
+
+<h2 id="14.0" name="14.0">Test server and email security</h2>
+
+<p>You can test server security at <a href="https://www.ssllabs.com/ssltest/index.html" alt="Quallys SSL Lab">Quallys SSL Lab</a>. It's fun to play with.</p>
+
+<p>I found Email Security Grader also a nice website to test my email configuration. I'm currently testing my Reverse DNS. It appears my ISP XS4ALL from The Netherlands supports it in their large Internet Subscriptions. Thanks to <a href="https://twitter.com/ednl" alt="EdNL">@ednl</a> for pointing that out.</p>
+
+<p><a href="http://www.emailsecuritygrader.com" alt="Email Security Grader">This is the website of Email Security Grader</a>.</p>
+
+<h2 id="15.0" name="15.0">What else I need to do?</h2>
+
+<p>Plenty of stuff really. Spamassassin, DKIM, you name it. I found another guide by Matt Wilcox about <a href="https://mattwilcox.net/web-development/setting-up-a-secure-website-with-https-and-spdy-support-under-nginx-on-a-raspberry-pi" alt="setting up a secure website with HTTPS and SPDY">setting up a secure website with HTTPS and SPDY</a>. I'll study that document soon as well. I think I saw some useful info there.</p>
+
+<p>I would like some automated updates as well. Right now I use apticron. That's a little program that sends me and email when new updates are available.</p>
+
+<p>So here you have it. A relatively secure Raspberry Pi with a web server, email server, and depending on the size of your external USB drive: a huge Owncloud installation. I hope this guide was useful. As stated earlier. I will test this guide myself this weekend on a brand new Raspberry Pi. Just to see if I wrote down all the correct steps to do the installation in one go, without errors.</p>
+
+<p>Best of luck with baking your Pi!</p>
+
+<p><a href="https://twitter.com/Pestmeester" alt="Pestmeester">@Pestmeester</a></p>
+
+</article>
+</section>
+
+<section id="second" class="container"> 
+<article class="movable">
+	<h2 id="16.0" name="16.0">Source material</h2>
+	<ul>
+		<li>Raspberry Pi Foundation (2014), <a href="http://www.raspberrypi.org/help/noobs-setup/" alt="NOOBS SETUP">NOOBS SETUP</a>. raspberrypi.org. Retrieved 14 Februari 2015.</li>
+		<li>Wilcox, Matt (2013). <a href="https://mattwilcox.net/web-development/setting-up-a-secure-home-web-server-with-raspberry-pi" alt="Setting up a (reasonably) secure home web-server with Raspberry Pi">Setting up a (reasonably) secure home web-server with Raspberry Pi</a>. mattwilcox.net. Retrieved 14 Februari 2015.</li>
+		<li>Grubb, Mel (2014). <a href="https://melgrubb.wordpress.com/2014/08/01/raspberry-pi-home-server-part-6-adding-a-hard-drive/" alt="Raspberry Pi Home Server: Part 6, Adding a hard drive">Raspberry Pi Home Server: Part 6, Adding a hard drive</a>. Retrieved 14 Februari 2015.</li>
+		<li>Russel, Dave (2014). <a href="https://www.linode.com/docs/security/securing-your-server/" alt="Securing Your Server">Securing Your Server</a>. linode.com. Retrieved 14 Februari 2015.</li>
+		<li>Namecheap (2014). <a href="https://www.namecheap.com/support/knowledgebase/article.aspx/9446/0/apache-opensslmodsslnginx" alt="Generating CSR on Apache + OpenSSL/ModSSL/Nginx">Generating CSR on Apache + OpenSSL/ModSSL/Nginx</a>. namecheap.com. Retrieved 14 Februari 2015.</li>
+		<li>Stewart, James (2014). <a href="https://www.linode.com/docs/email/postfix/email-with-postfix-dovecot-and-mysql" alt="Email with Postfix, Dovecot, and MySQL">Email with Postfix, Dovecot, and MySQL</a>. linode.com. Retrieved 14 Februari 2015.</li>
+		<li>Elvis, Angelaccio (2015). <a href="http://www.aelog.org/install-owncloud-in-a-subdirectory-using-nginx/" alt="Install ownCloud in a subdirectory using nginx">Install ownCloud in a subdirectory using nginx</a>. aelog.org. Retrieved 14 Februari 2015.</li>
+		<li>Mitra, Abhishek (2014). <a href="http://www.techjawab.com/2014/08/how-to-setup-owncloud-7-on-raspberry-pi.html" alt="How to setup ownCloud 7 on Raspberry Pi">How to setup ownCloud 7 on Raspberry Pi</a>. techjawab.com. Retrieved 14 Februari 2015.</li>
+	</ul>
+	</article>
+</section>
+
+<section id="fourth" class="container"> 
+<article class="story">
+	<h2 id="17.0" name="17.0">Changelog</h2>
+	<ul>
+		<li>02-19-2015: Added an important step in "Setting up your USB Drive", adding a filesystem to the newly created partition.</li>
+		<li>02-19-2015: Optimized chapter "Setting up your USB Drive" to be consistent with the structure of other parts of the guide.</li>
+		<li>02-18-2015: Added Table of contents and changelog; also included minor spelling mistakes (it's vs its /facepalm).</li>
+		<li>02-17-2015: Uploaded original guide.</li>
+	</ul>
+	</article>
+</section>
+
+<section id="fifth" class="container">
+	<article class="movable">
+		<p>© 2015 <a href="https://twitter.com/Pestmeester" alt="Pestmeester">@Pestmeester</a></p>
+	</article>
+</section>
+
+</div>
+</body>
+</html>

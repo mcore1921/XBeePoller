@@ -1,0 +1,381 @@
+-- MySQL dump 10.13  Distrib 5.5.32, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: xbtherm
+-- ------------------------------------------------------
+-- Server version	5.5.32-0ubuntu0.12.04.1
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `locations`
+--
+
+DROP TABLE IF EXISTS `locations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `locations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `readings`
+--
+
+DROP TABLE IF EXISTS `readings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `readings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sensor` int(11) DEFAULT NULL,
+  `location` int(11) DEFAULT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `value` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=32546711 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `readings_history`
+--
+
+DROP TABLE IF EXISTS `readings_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `readings_history` (
+  `id` int(11) NOT NULL,
+  `sensor` int(11) DEFAULT NULL,
+  `location` int(11) DEFAULT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `value` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sensors`
+--
+
+DROP TABLE IF EXISTS `sensors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sensors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `address` varchar(30) DEFAULT NULL,
+  `calibration` float DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `summarydata`
+--
+
+DROP TABLE IF EXISTS `summarydata`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `summarydata` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `mattsdesktop` float DEFAULT NULL,
+  `hallwaythermostat` float DEFAULT NULL,
+  `backporch` float DEFAULT NULL,
+  `garage` float DEFAULT NULL,
+  `masterbedroom` float DEFAULT NULL,
+  `nursery` float DEFAULT NULL,
+  `kegerator` float DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `summary_time_index` (`time`)
+) ENGINE=InnoDB AUTO_INCREMENT=202724 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `summarytracker`
+--
+
+DROP TABLE IF EXISTS `summarytracker`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `summarytracker` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `highestIdEntered` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=88934 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `thermdata`
+--
+
+DROP TABLE IF EXISTS `thermdata`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `thermdata` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sensor` int(11) DEFAULT NULL,
+  `location` int(11) DEFAULT NULL,
+  `minReadingId` int(11) DEFAULT NULL,
+  `maxReadingId` int(11) DEFAULT NULL,
+  `numReadings` int(11) DEFAULT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `calibration` float DEFAULT NULL,
+  `value` float DEFAULT NULL,
+  `celsius` float DEFAULT NULL,
+  `farenheit` float DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=902419 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping events for database 'xbtherm'
+--
+/*!50106 SET @save_time_zone= @@TIME_ZONE */ ;
+/*!50106 DROP EVENT IF EXISTS `do_backupHistory` */;
+DELIMITER ;;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;;
+/*!50003 SET character_set_client  = utf8 */ ;;
+/*!50003 SET character_set_results = utf8 */ ;;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;;
+/*!50003 SET sql_mode              = '' */ ;;
+/*!50003 SET @saved_time_zone      = @@time_zone */ ;;
+/*!50003 SET time_zone             = 'SYSTEM' */ ;;
+/*!50106 CREATE*/ /*!50117 DEFINER=`mcore`@`localhost`*/ /*!50106 EVENT `do_backupHistory` ON SCHEDULE EVERY 1 HOUR STARTS '2014-04-21 01:08:25' ON COMPLETION NOT PRESERVE ENABLE DO call backupHistory() */ ;;
+/*!50003 SET time_zone             = @saved_time_zone */ ;;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;;
+/*!50003 SET character_set_results = @saved_cs_results */ ;;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;;
+/*!50106 DROP EVENT IF EXISTS `do_filterAndConvertAndUpdate` */;;
+DELIMITER ;;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;;
+/*!50003 SET character_set_client  = utf8 */ ;;
+/*!50003 SET character_set_results = utf8 */ ;;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;;
+/*!50003 SET sql_mode              = '' */ ;;
+/*!50003 SET @saved_time_zone      = @@time_zone */ ;;
+/*!50003 SET time_zone             = 'SYSTEM' */ ;;
+/*!50106 CREATE*/ /*!50117 DEFINER=`mcore`@`localhost`*/ /*!50106 EVENT `do_filterAndConvertAndUpdate` ON SCHEDULE EVERY 5 MINUTE STARTS '2014-05-10 23:59:09' ON COMPLETION NOT PRESERVE ENABLE DO BEGIN
+      call filterAndConvert();
+      call updateSummaryData();
+    END */ ;;
+/*!50003 SET time_zone             = @saved_time_zone */ ;;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;;
+/*!50003 SET character_set_results = @saved_cs_results */ ;;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;;
+DELIMITER ;
+/*!50106 SET TIME_ZONE= @save_time_zone */ ;
+
+--
+-- Dumping routines for database 'xbtherm'
+--
+/*!50003 DROP FUNCTION IF EXISTS `roundToMinutes` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+CREATE DEFINER=`mcore`@`localhost` FUNCTION `roundToMinutes`(t TIMESTAMP, m INT) RETURNS timestamp
+    DETERMINISTIC
+BEGIN
+  DECLARE t3 TIMESTAMP;
+  SET t3 = t - INTERVAL (MINUTE(t) % m) MINUTE;
+  SET t3 = t3 - INTERVAL second(t3) SECOND;
+  RETURN t3;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP FUNCTION IF EXISTS `roundToMinutes2` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+CREATE DEFINER=`mcore`@`localhost` FUNCTION `roundToMinutes2`(t TIMESTAMP, m INT) RETURNS timestamp
+    DETERMINISTIC
+BEGIN
+  DECLARE t3 TIMESTAMP;
+  SET t3 = t - INTERVAL (MINUTE(t) % m) MINUTE;
+  SET t3 = t3 - INTERVAL second(t3) SECOND;
+  RETURN t3;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `backupHistory` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+CREATE DEFINER=`mcore`@`localhost` PROCEDURE `backupHistory`()
+BEGIN
+     DELETE readings
+     FROM readings join readings_history
+     WHERE readings.id = readings_history.id;
+
+     INSERT into readings_history
+       (id, sensor, location, time, value)
+     SELECT id, sensor, location, time, value
+     FROM readings
+     WHERE readings.time < now() - interval 2 day limit 10000;
+
+     DELETE readings
+     FROM readings join readings_history
+     WHERE readings.id = readings_history.id;
+  END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `filterAndConvert` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+CREATE DEFINER=`mcore`@`localhost` PROCEDURE `filterAndConvert`()
+BEGIN
+     INSERT into thermdata
+       (sensor, location, minReadingId, maxReadingId, numReadings,
+        time, calibration, value, celsius, farenheit)
+     SELECT sensor, location,
+        min(id) as minid,
+        max(id) as maxid,
+        count(id) as countid,
+        max(time) as time,
+        (select calibration from sensors where id = sensor) as cal,
+        avg(value) as value,
+        ((avg(value)*1000.0/1023.0*1.2)-500)*0.1*(select calibration from sensors where id = sensor) as celsius,
+        (((avg(value)*1000.0/1023.0*1.2)-500)*0.1*(select calibration from sensors where id = sensor))*9.0/5.0+32.0 as farenheit
+     from readings
+     where ((select max(time) from thermdata) IS NULL or
+            roundToMinutes(time,5) > roundToMinutes((select max(time) from thermdata), 5)) and
+            roundToMinutes(time, 5) != roundToMinutes (now(), 5)
+     group by sensor, location, roundToMinutes(time, 5);
+  END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `updateSummaryData` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8 */ ;
+/*!50003 SET character_set_results = utf8 */ ;
+/*!50003 SET collation_connection  = utf8_general_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+CREATE DEFINER=`mcore`@`localhost` PROCEDURE `updateSummaryData`()
+BEGIN
+
+     
+     
+     SET @endid = (SELECT max(id) from thermdata); 
+
+     SET @startid = (SELECT max(highestIdEntered) from summarytracker);
+
+     
+     
+     drop table if exists thermdata_tfs;  
+
+     create table thermdata_tfs like thermdata;
+     insert into thermdata_tfs
+        select * from thermdata 
+where thermdata.id > (select @startid) and 
+              thermdata.id <= (select @endid);
+
+     
+     INSERT into summarydata 
+       (time, mattsdesktop, hallwaythermostat,
+          backporch, garage, masterbedroom, nursery, 
+          kegerator) 
+     SELECT time,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 2 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f2,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 5 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f3,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 4 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f4,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 6 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f5,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 7 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f6,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 8 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f7,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 9 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f8
+     FROM thermdata_tfs as a
+     GROUP BY roundToMinutes(time, 5), f2, f3, f4, f5, f6, f7, f8;
+      
+     insert into summarytracker (highestIdEntered) select @endid;
+
+     drop table thermdata_tfs;     
+
+  END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2015-03-14 18:02:01

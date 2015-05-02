@@ -1,0 +1,30 @@
+The HTML gen takes a template file as input and searches for
+the strings below, replacing them with special values from the database.
+
+Note that only the nesting patterns shown below are supported. Attempts
+to use other nesting patterns will not result in happiness until more
+development is done!
+
+Also note the newlines listed below are required.
+
+
+$foreachrow\n
+ $rowtimedash
+ $rowtimeslash
+ $foreachcol\n
+  $rowcolval
+  $delimeter(str)  (is str unless it's the last col, then is nothing)
+ $endforeachcol\n
+$endforeachrow\n
+
+$foreachcol\n
+ $colname
+ $colnum
+ $curcolval
+ $delimeter(str)
+$endforeachcol\n
+
+$humandatetime
+$lastdatatime
+
+

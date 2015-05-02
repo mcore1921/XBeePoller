@@ -1,0 +1,62 @@
+Short answer:
+
+To update calibration, change the sensors table in the mysql
+database.  Do something like:
+mysql> update sensors set calibration = 0.98 where id = 1;
+
+Also, if you want the watch file to have correct calibrations,
+add something like this to your XBeeThermPollerConfig, where
+the mac matches the mac of the associated XBee and the value is
+a from below.
+:CALIBRATIONS
+00-13-a2-00-40-a8-36-49 1.034
+00-13-a2-00-40-8b-0f-64 1.000
+
+
+Formula for gain (solving for a, C=degrees celsius, x=analog reading):
+  a = C/(0.1173x - 50)
+
+
+Detailed calibration overview:
+
+Calibration scalar is applied in mysql scripts as part of conversion
+from raw sample readings (readings table) to averaged readings
+(thermdata table).  The formula, for an analog value X, is:
+celsius = ((x*1000.0/1023.0*1.2)-500)*0.1*cal_scalar
+
+From the TMP36 datasheet, we expect 10 mvDC of signal for each degree C.
+
+The XBee ADC is against a fixed 1.2v internal reference, so saturated
+on that input would be 1.2v.  It's a 10-bit ADC, so 0=0 and 1023 = max.
+So, to find the volts for a value x from the ADC:
+   mV = (x*1000/1023*1.2)
+Multiply by 1000/1023 to normalize for the 10-bit ADC, and the resulting
+value is 1000 * a percentage of the reference voltage of 1.2v.
+Multiply by 1.2 and you have a raw voltage reading, in mV.
+The TMP36's offset is such that at 500mV it is 0 degrees C.
+The TMP36's gain is 10mV per degree C.
+So:
+   C = (mv-500)*0.1
+   C = ((x*1000/1023*1.2)-500)*0.1
+If we assume that the offset doesn't need calibration (no reason
+to assume this, the datasheet doesn't appear to give guidance)
+then we can simply add a gain calibration a thusly:
+   C = ((x*1000/1023*1.2)-500)*0.1*a
+I don't think this is the best way to do things, but at least it will
+cause all the sensors to agree at typical room temperature.
+
+The calibration scalar is stored in the mysql sensors table.  It's tied
+to the MAC of the XBee on a board.  Logically it would be better tied
+to the board itself, as that's what is being calibrated, but we don't
+have enough information to know what that is.
+
+
+
+Calibration data for specific units:
+2015-05-01, in the kegerator, all with 1.000 calibration scalar
+00-13-a2-00-40-d8-6a-82 32.9
+00-13-a2-00-40-d8-6a-83 32.5
+00-13-a2-00-40-d4-a4-87 31.7
+00-13-a2-00-40-d4-a4-8e 31.5
+00-13-a2-00-40-e4-3c-9c 32.1
+00-13-a2-00-40-da-e0-a4 32.0

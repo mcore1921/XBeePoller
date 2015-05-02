@@ -1,0 +1,74 @@
+<html>
+  <head>
+    <style>
+    table,th,td
+    {
+    border:1px solid black;
+    border-collapse:collapse;
+    }
+    </style>
+    <meta http-equiv="refresh" content="300">
+    <meta http-equiv="expires" content="-1">
+    <script type="text/javascript" src="dygraph-combined.js"></script>
+  </head>
+  <body>
+  <div id="graphdiv" style="width: 900px; height: 500px;"></div>
+  <script type="text/javascript">
+    g = new Dygraph(document.getElementById("graphdiv"),
+  [
+$foreachrow
+[new Date("$rowtimeslash"), $foreachcol
+$rowcolval$delimeter(", ")$endforeachcol
+],
+$endforeachrow
+],
+  { labels: ["Time", $foreachcol
+"$colname"$delimeter(", ")$endforeachcol
+] ,
+showRoller: true,
+rollPeriod: 1,
+labelsDivWidth: 825,
+digitsAfterDecimal: 1,
+interactionModel: {},
+legend: 'always',
+          title: 'Temperature Readings (in Farenheit) - updated $humandatetime'
+}
+);
+   setStatus();
+   function setStatus() {
+     document.getElementById("visibility").innerHTML = 
+       g.visibility().toString();
+   }
+
+   function change(el) {
+     g.setVisibility(parseInt(el.id), el.checked);
+     setStatus();
+   }
+</script>
+Current Temperatures ($lastdatatime)<br>
+<table style="width:400px">
+<tr>
+$foreachcol
+<th>$colname</th>
+$endforeachcol
+</tr>
+<tr>
+$foreachcol
+<td>$curcolval</td>
+$endforeachcol
+</tr>
+</table>
+<p><b>Show Series:</b></p>
+<p>
+$foreachcol
+<input type=checkbox id ="$colnum" checked onClick="change(this)">
+<label for="$colnum"> $colname</label></br>
+$endforeachcol
+</p>
+    <a href="./current_dg.html">Today</a>
+    <a href="./current_dg_week.html">This Week</a>
+    <a href="./current_dg_month.html">This Month</a>
+    <a href="./current_dg_year.html">This Year</a>
+  </body>
+</html>
+

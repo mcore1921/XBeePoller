@@ -1,0 +1,639 @@
+EASY START FROM SCRATCH:
+
+Here are the commands to start the whole thing up from scratch 
+  (on a new box)
+Note you might want to replace username "mcore" and password "matt"
+
+
+From shell:
+> mysql -u root -p
+
+Now, inside mysql:
+>create database therm;
+>create user 'xbtherm'@'localhost' identified by 'therm';
+>grant all privileges on therm.* to 'xbtherm'@'%';
+>quit
+
+Now, back from the shell 
+     NOTE THIS IS PROBABLY ANTIQUATED
+>mysql -u mcore -p xbtherm < SQLStructure.txt
+
+Now, do something to adjust the summarydata table so that it matches your sensor(s).  **Mode info to be added here**
+
+Also, enable the event_scheduler by default in /etc/mysql/my.cnf.
+Add the following:
+event_scheduler=ON
+... somewhere in the [mysqld] block.
+
+Done!
+
+-------------------------------
+
+
+SQL from the command line - notes:
+
+General form:
+> mysql -h 192.168.0.24 -u mcore --password=matt -e "<SQL STATEMENT>" thermal
+
+(note that thermal is the database name)
+
+INSERT syntax:
+INSERT INTO <table> (<column_name1>, <column_name2>, ...) VALUES (<value1>, <value2>, ...);
+
+Specifics:
+> mysql -h 192.168.0.24 -u mcore --password=matt -e "INSERT INTO loc (location) VALUES ('Exercise Room');" thermal
+> mysql -h 192.168.0.24 -u mcore --password=matt -e "SELECT * from therm;" thermal
+> mysql -h 192.168.0.24 -u mcore --password=matt -e "TRUNCATE therm;" thermal
+
+
+select 
+   therm.time, therm.temperature, loc.location, sensor.sensor 
+from 
+   therm, loc, sensor 
+where 
+   therm.loc_id = loc.loc_id and 
+   therm.sensor_id = sensor.sensor_id;
+
+
+Using gnuplot:
+awk '{print $1"-"$2 " " $3}' to format the output
+set xdata time
+set timefmt "%Y-%m-%d-%H:%M:%S"
+set format x "%b %d\n%H:%M"
+plot "/var/tmp/t2" using 1:2 with lines
+
+Crazy join for To, Ta together:
+> select therm1.time as time, therm1.temperature as therm_To, therm2.temperature as therm_Ta from therm as therm1, therm as therm2, sensor as s1, sensor as s2 where abs(therm1.time - therm2.time) < 2 and therm1.sensor_id = s1.sensor_id and s1.sensor like "%To" and therm2.sensor_id = s2.sensor_id and s2.sensor like "%Ta";
+
+
+------------------------------
+Starting from scratch:
+1) Login to mysql as root
+
+create database xbtherm;
+create user 'mcore'@'localhost' identified by 'matt';
+grant all privileges on xbtherm.* to 'mcore'@'%';
+use xbtherm;
+create table locations 
+  (id INT AUTO_INCREMENT PRIMARY KEY,
+   name VARCHAR(255));
+create table sensors
+  (id INT AUTO_INCREMENT PRIMARY KEY,
+   address VARCHAR(30),
+   calibration FLOAT);
+create table readings
+  (id INT AUTO_INCREMENT PRIMARY KEY,
+   sensor INT,
+   location INT,
+   time TIMESTAMP,
+   value INT);
+create table thermdata
+  (id INT AUTO_INCREMENT PRIMARY KEY,
+   sensor INT,
+   location INT,
+   minReadingId INT,
+   maxReadingId INT,
+   numReadings INT,
+   time TIMESTAMP,
+   calibration FLOAT,
+   value FLOAT,
+   celsius FLOAT,
+   farenheit FLOAT);
+
+
+drop function roundToMinutes;
+delimiter //
+create function roundToMinutes(t TIMESTAMP, m INT)
+RETURNS TIMESTAMP DETERMINISTIC
+BEGIN
+  DECLARE t3 TIMESTAMP;
+  SET t3 = t - INTERVAL (MINUTE(t) % m) MINUTE;
+  SET t3 = t3 - INTERVAL second(t3) SECOND;
+  RETURN t3;
+END//
+delimiter ;
+
+
+drop procedure filterAndConvert;
+delimiter //
+create procedure filterAndConvert()
+  BEGIN
+     INSERT into thermdata
+       (sensor, location, minReadingId, maxReadingId, numReadings,
+        time, calibration, value, celsius, farenheit)
+     SELECT sensor, location,
+        min(id) as minid,
+        max(id) as maxid,
+        count(id) as countid,
+        max(time) as time,
+        (select calibration from sensors where id = sensor) as cal,
+        avg(value) as value,
+        ((avg(value)*1000.0/1023.0*1.2)-500)*0.1*(select calibration from sensors where id = sensor) as celsius,
+        (((avg(value)*1000.0/1023.0*1.2)-500)*0.1*(select calibration from sensors where id = sensor))*9.0/5.0+32.0 as farenheit
+     from readings
+     where ((select max(time) from thermdata) IS NULL or
+            roundToMinutes(time,5) > roundToMinutes((select max(time) from thermdata), 5)) and
+            roundToMinutes(time, 5) != roundToMinutes (now(), 5)
+     group by sensor, location, roundToMinutes(time, 5);
+  END //
+delimiter ;
+
+drop event do_filterAndConvert;
+CREATE EVENT do_filterAndConvert
+  ON SCHEDULE 
+    EVERY 5 MINUTE
+  DO
+    call filterAndConvert();
+
+set global event_scheduler = 1;
+
+
+create table readings_history
+  (id INT PRIMARY KEY,
+   sensor INT,
+   location INT,
+   time TIMESTAMP,
+   value INT);
+
+drop procedure backupHistory;
+delimiter //
+create procedure backupHistory()
+  BEGIN
+     DELETE readings
+     FROM readings join readings_history
+     WHERE readings.id = readings_history.id;
+
+     INSERT into readings_history
+       (id, sensor, location, time, value)
+     SELECT id, sensor, location, time, value
+     FROM readings
+     WHERE readings.time < now() - interval 2 day limit 10000;
+
+     DELETE readings
+     FROM readings join readings_history
+     WHERE readings.id = readings_history.id;
+  END //
+delimiter ;
+
+drop event do_backupHistory;
+CREATE EVENT do_backupHistory
+  ON SCHEDULE 
+    EVERY 1 HOUR
+  DO
+    call backupHistory();
+
+---------------------------
+Playing around below here
+
+
+
+SELECT sensor, 
+       min(id) as minid,
+       max(id) as maxid,
+       count(id) as countid,
+       max(time) as time,
+       (select calibration from sensors where address = sensor) as cal,
+       avg(value) as value
+from readings
+where time > roundToMinutes((select max(time) from t), 5) and
+      roundToMinutes(time, 5) != roundToMinutes (now(), 5)
+group by sensor, roundToMinutes(time, 5);
+
+select sensor,
+       avg(value) as value,
+       time
+from readings
+where  unix_timestamp(roundToMinutes(time, 5)) =
+       unix_timestamp(roundToMinutes(now(), 5))
+group by sensor;
+
+select unix_timestamp(time) as t1,
+       unix_timestamp(roundToMinutes(time, 5)) as t2,
+       unix_timestamp(roundToMinutes(now(), 5)) as now
+from readings
+     where id > 7200;
+
+drop function roundToMinutes2;
+delimiter //
+create function roundToMinutes2(t TIMESTAMP, m INT)
+RETURNS TIMESTAMP DETERMINISTIC
+BEGIN
+  DECLARE t3 TIMESTAMP;
+  SET t3 = t - INTERVAL (MINUTE(t) % m) MINUTE;
+  SET t3 = t3 - INTERVAL second(t3) SECOND;
+  RETURN t3;
+END//
+delimiter ;
+
+create table readings
+  (id INT AUTO_INCREMENT PRIMARY KEY,
+   sensor INT,
+   location INT,
+   time TIMESTAMP,
+   value INT);
+
+CREATE INDEX sensor_index ON readings (sensor);
+CREATE INDEX location_index ON readings (location);
+CREATE INDEX sensorxlocation_index ON readings (sensor, location);
+CREATE INDEX locationxsensor_index ON readings (location, sensor);
+ANALYZE TABLE readings;
+
+DROP INDEX sensor_index ON readings;
+DROP INDEX location_index ON readings;
+DROP INDEX sensorxlocation_index ON readings;
+DROP INDEX locationxsensor_index ON readings;
+ANALYZE TABLE readings;
+
+SELECT sensor, location,
+       min(id) as minid,
+       max(id) as maxid,
+       count(id) as countid,
+       max(time) as time,
+       (select calibration from sensors where id = sensor) as cal,
+       avg(value) as value,
+       ((avg(value)*1000.0/1023.0*1.2)-500)*0.1*(select calibration from sensors where id = sensor) as celsius,
+       (((avg(value)*1000.0/1023.0*1.2)-500)*0.1*(select calibration from sensors where id = sensor))*9.0/5.0+32.0 as farenheit
+FROM readings
+WHERE ((select max(time) from thermdata) IS NULL or
+       roundToMinutes(time,5) > roundToMinutes((select max(time) from thermdata), 5)) and
+      roundToMinutes(time, 5) != roundToMinutes (now(), 5)
+GROUP BY sensor, location, roundToMinutes(time, 5);
+
+explain extended SELECT sensor, location,
+       min(id) as minid,
+       max(id) as maxid,
+       count(id) as countid,
+       max(time) as time
+FROM readings
+WHERE  roundToMinutes(time,5) > roundToMinutes((select max(time) from thermdata), 5) and
+       roundToMinutes(time, 5) != roundToMinutes (now(), 5)
+GROUP BY sensor, location, roundToMinutes(time, 5);
+
+explain SELECT sensor, location,
+       min(id) as minid,
+       max(id) as maxid,
+       count(id) as countid,
+       max(time) as time
+FROM readings
+WHERE  roundToMinutes(time,5) > roundToMinutes((select max(time) from thermdata), 5) and
+       roundToMinutes(time, 5) != roundToMinutes (now(), 5)
+GROUP BY sensor, location, roundToMinutes(time, 5);
+
+----------------------------------------
+This query, with some additional formatting, allows data output
+for easy import into something like google charts
+
+
+SELECT time, 
+       (select avg(farenheit) 
+        from thermdata as b 
+        where b.location = 1 and b.time = a.time) as f1, 
+       (select avg(farenheit) 
+        from thermdata as b 
+        where b.location = 2 and b.time = a.time) as f2, 
+       (select avg(farenheit) 
+        from thermdata as b 
+        where b.location = 3 and b.time = a.time) as f3, 
+       (select avg(farenheit) 
+        from thermdata as b 
+        where b.location = 4 and b.time = a.time) as f4
+from thermdata as a 
+where time > now() - interval 1 day
+group by time, f1, f2, f3, f4;
+
+
+  SELECT time, 
+      (select avg(farenheit) from thermdata as b 
+      where b.location = 2 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f2,  
+      (select avg(farenheit) from thermdata as b 
+      where b.location = 3 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f3,  
+      (select avg(farenheit) from thermdata as b 
+      where b.location = 4 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f4  
+      from thermdata as a where time > now() - interval 1 day 
+      group by roundToMinutes(time, 5), f2, f3, f4;
+
+----------------------------------------
+More playing around here - 20140304
+
+create table readings_history
+  (id INT PRIMARY KEY,
+   sensor INT,
+   location INT,
+   time TIMESTAMP,
+   value INT);
+
+insert into readings_history (id, sensor, location, time, value)
+   select id, sensor, location, time, value from readings
+   where time < now() - interval 5 month limit 10000;
+
+delete readings from readings join readings_history 
+   where readings.id = readings_history.id;
+
+drop procedure backupHistory;
+delimiter //
+create procedure backupHistory()
+  BEGIN
+     DELETE readings
+     FROM readings join readings_history
+     WHERE readings.id = readings_history.id;
+
+     INSERT into readings_history
+       (id, sensor, location, time, value)
+     SELECT id, sensor, location, time, value
+     FROM readings
+     WHERE readings.time < now() - interval 2 month limit 10000;
+
+     DELETE readings
+     FROM readings join readings_history
+     WHERE readings.id = readings_history.id;
+  END //
+delimiter ;
+
+drop event do_backupHistory;
+CREATE EVENT do_backupHistory
+  ON SCHEDULE 
+    EVERY 1 HOUR
+  DO
+    call backupHistory();
+
+drop table thermdata_temp;
+create table thermdata_temp like thermdata;
+insert into thermdata_temp 
+   select * from thermdata 
+   where thermdata.time > now() - interval 1 day;
+SELECT time, 
+       (select avg(farenheit) from thermdata_temp as b 
+        where b.location = 2 and 
+        b.time > now() - interval 2 day and 
+        roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f2, 
+       (select avg(farenheit) from thermdata_temp as b 
+        where b.location = 5 and 
+        b.time > now() - interval 2 day and 
+        roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f3, 
+       (select avg(farenheit) from thermdata_temp as b 
+        where b.location = 4 and 
+        b.time > now() - interval 2 day and 
+        roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f4 
+from thermdata_temp as a 
+     where time > now() - interval 2 day 
+     group by roundToMinutes(time, 5), f2, f3, f4;
+drop table thermdata_temp;
+
+
+SELECT time, 
+       (select avg(farenheit) 
+        from thermdata_temp as b 
+        where b.location = 1 and b.time = a.time) as f1, 
+       (select avg(farenheit) 
+        from thermdata_temp as b 
+        where b.location = 2 and b.time = a.time) as f2, 
+       (select avg(farenheit) 
+        from thermdata_temp as b 
+        where b.location = 3 and b.time = a.time) as f3, 
+       (select avg(farenheit) 
+        from thermdata_temp as b 
+        where b.location = 4 and b.time = a.time) as f4
+from thermdata_temp as a 
+where time > now() - interval 1 day
+group by time, f1, f2, f3, f4;
+
+---------------------------------------------
+20140510 - time to make the table we're actually using in the web page
+
+Current mapping of locations -> sensors -> sensor ID's
+Matt's Desktop     - 64 - 2
+Hallway Thermostat - 49 - 5
+Back Porch         - 9f - 4
+Garage             - 22 - 6
+Master Bedroom     - 28 - 7
+Nursery            - 32 - 8
+
+create table summarydata
+  (id INT AUTO_INCREMENT PRIMARY KEY,
+   time              TIMESTAMP,   
+   mattsdesktop      FLOAT,  
+   hallwaythermostat FLOAT,
+   backporch         FLOAT,
+   garage            FLOAT,
+   masterbedroom     FLOAT,
+   nursery           FLOAT );
+CREATE INDEX summary_time_index ON summarydata (time);
+
+create table summarytracker
+  (id INT AUTO_INCREMENT PRIMARY KEY,
+   time TIMESTAMP,
+   highestIdEntered INT);
+
+
+
+drop procedure updateSummaryData;
+delimiter //
+create procedure updateSummaryData()
+  BEGIN
+
+     # Let's snapshot a start and end so we aren't effected by potential
+     # concurrent changes
+     SET @endid = (SELECT max(id) from thermdata); 
+#    SET @endid = (SELECT max(highestIdEntered) from summarytracker)+1000; 
+     SET @startid = (SELECT max(highestIdEntered) from summarytracker);
+
+     # Temp For Summary (can't be a true
+     # temp table because of self-join limitations)
+     drop table if exists thermdata_tfs;  
+
+     create table thermdata_tfs like thermdata;
+     insert into thermdata_tfs
+        select * from thermdata 
+	where thermdata.id > (select @startid) and 
+              thermdata.id <= (select @endid);
+
+     # Put the meaty work here
+     INSERT into summarydata 
+       (time, mattsdesktop, hallwaythermostat,
+          backporch, garage, masterbedroom, nursery) 
+     SELECT time,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 2 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f2,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 5 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f3,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 4 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f4,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 6 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f5,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 7 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f6,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 8 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f7
+     FROM thermdata_tfs as a
+     GROUP BY roundToMinutes(time, 5), f2, f3, f4, f5, f6, f7;
+      
+     insert into summarytracker (highestIdEntered) select @endid;
+
+     drop table thermdata_tfs;     
+
+  END //
+delimiter ;
+
+drop event do_filterAndConvertAndUpdate;
+delimiter //
+CREATE EVENT do_filterAndConvertAndUpdate
+  ON SCHEDULE 
+    EVERY 5 MINUTE
+  DO
+    BEGIN
+      call filterAndConvert();
+      call updateSummaryData();
+    END //
+delimiter ;
+
+--- 20140510
+--- After setting up the faster updates, I then updated the backupHistory
+function so that we only keep 2 days of history in readings, instead of
+2 months.  This *should* make the periodic updates nearly instantaneous.
+
+Before this, there were 2,052,332 rows in readings, 
+ and 8,973,253 rows in readings_history.
+
+
+--- 20140628
+Here's a query to find the number of seconds since a particular location
+has been last updated in summarydata
+select now() - a.time from (select time, mattsdesktop from summarydata order by time desc limit 1) as a;
+
+
+--- 20150101
+Now an update to add the kegerator sensor to the summary table
+
+drop procedure updateSummaryData;
+delimiter //
+create procedure updateSummaryData()
+  BEGIN
+
+     # Let's snapshot a start and end so we aren't effected by potential
+     # concurrent changes
+     SET @endid = (SELECT max(id) from thermdata); 
+#    SET @endid = (SELECT max(highestIdEntered) from summarytracker)+1000; 
+     SET @startid = (SELECT max(highestIdEntered) from summarytracker);
+
+     # Temp For Summary (can't be a true
+     # temp table because of self-join limitations)
+     drop table if exists thermdata_tfs;  
+
+     create table thermdata_tfs like thermdata;
+     insert into thermdata_tfs
+        select * from thermdata 
+	where thermdata.id > (select @startid) and 
+              thermdata.id <= (select @endid);
+
+     # Put the meaty work here
+     INSERT into summarydata 
+       (time, mattsdesktop, hallwaythermostat,
+          backporch, garage, masterbedroom, nursery, 
+          kegerator) 
+     SELECT time,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 2 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f2,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 5 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f3,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 4 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f4,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 6 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f5,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 7 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f6,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 8 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f7,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 9 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f8
+     FROM thermdata_tfs as a
+     GROUP BY roundToMinutes(time, 5), f2, f3, f4, f5, f6, f7, f8;
+      
+     insert into summarytracker (highestIdEntered) select @endid;
+
+     drop table thermdata_tfs;     
+
+  END //
+delimiter ;
+
+
+--- 20150314
+New updateSummaryData for raspberry pi 2
+
+DROP TABLE IF EXISTS `summarydata`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `summarydata` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `test` float DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `summary_time_index` (`time`)
+) ENGINE=InnoDB AUTO_INCREMENT=202724 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+drop procedure updateSummaryData;
+delimiter //
+create procedure updateSummaryData()
+  BEGIN
+
+     # Let's snapshot a start and end so we aren't effected by potential
+     # concurrent changes
+     SET @endid = (SELECT max(id) from thermdata); 
+#    SET @endid = (SELECT max(highestIdEntered) from summarytracker)+1000; 
+     SET @startid = (SELECT max(highestIdEntered) from summarytracker);
+
+     # Temp For Summary (can't be a true
+     # temp table because of self-join limitations)
+     drop table if exists thermdata_tfs;  
+
+     create table thermdata_tfs like thermdata;
+     insert into thermdata_tfs
+        select * from thermdata 
+	where thermdata.id > (select @startid) and 
+              thermdata.id <= (select @endid);
+
+     # Put the meaty work here
+     INSERT into summarydata 
+       (time, test)
+     SELECT time,
+     (SELECT avg(farenheit) from thermdata_tfs as b
+      where b.location = 10 and 
+      roundToMinutes(b.time, 5) = roundToMinutes(a.time, 5)) as f2
+     FROM thermdata_tfs as a
+     GROUP BY roundToMinutes(time, 5), f2;
+      
+     insert into summarytracker (highestIdEntered) select @endid;
+
+     drop table thermdata_tfs;     
+
+  END //
+delimiter ;
+
+
+--------------------
+
+New database for lighter style.
+
+Starting from scratch:
+(As root:)
+create database therm;
+create user 'mcore'@'localhost' identified by 'matt';
+grant all privileges on therm.* to 'mcore'@'%';
+

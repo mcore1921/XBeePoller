@@ -1,0 +1,34 @@
+So you want to make a new config?  Here's the overview if you're using 
+a Raspberry Pi 2
+
+1) Configure an XBee in API mode.  See XBeeConfig.txt.  Hook it up to the 
+   RPI2 - +3.3v, ground, TXD, and RXD.  Configure raspberry pi so the 
+   TXD/RXD pins aren't providing a terminal, but are instead available 
+   as a /dev/tty.  I'm pretty sure raspi-config can do this.
+2) Build the code.  See NewRpiConfig.txt for a list of packages you'll need.  
+   Keep running Make and figure out the dependencies - everything's in 
+   there but the Makefile isn't very advanced.
+3) Make a new MySQL database and set it up with the config.  See SQLNotes.txt.
+4) Set up a ~/.XBeeThermPollerConfig/XBeeThermPollerConfig file.  
+   Example below.
+5) Set up at least one remote station for testing.  Again see XBeeConfig.txt.
+6) Run thermPoller --port=/dev/ttyXXXX, replacing XXXX for the right port.  
+   On Raspberry Pi, it's typically /dev/ttyAMA0.
+   You can also set the default port in the config file so you don't have
+   to pass it as an arg. Add the following:
+:PROCESS_CONFIG
+PORTNAME /dev/ttyAMA0
+7) Calibrate the remote station.  See Calibration.txt for details.
+8) Set up cron job for webpage creation. See htmlgen/README for details.
+9) Set up cron job for battery failure notification.  See battmail/README
+   for details.
+
+Example contents of a XBeeThermPollerConfig file:
+:SENSORS
+00-13-a2-00-40-a8-36-49 HallwayThermostat
+00-13-a2-00-40-8b-0f-64 MattsDesktop
+00-13-a2-00-40-8b-0f-9f BackPorch
+00-13-a2-00-40-a7-3f-32 Nursery
+00-13-a2-00-40-a7-3f-28 MasterBedroom
+00-13-a2-00-40-a7-3f-22 Garage
+00-13-a2-00-40-b1-81-e0 Kegerator

@@ -1,0 +1,21 @@
+To auto-send emails when a sensor (or the base station) go unresponsive:
+
+Note: by default, notifications go out every 2 hours, and let you know 
+  if anything hasn't talked for 2 hours.  This can all be tweaked with 
+  the crontab schedule and with command-line args - run battmail with 
+  no args for usage.
+1) Build battmail.  It's in the battmail subdir.
+2) Set up a ~/.XBeeThermPollerConfig/BattMail file.  Example and more
+       detail below.
+3) Add this line to crontab
+0 */2 * * * <full_path_to_battmail_executable> <email@addr.com> >> /dev/null
+4) You can add --cc <email@addr.com> between the battmail executable
+   and the target email address to add a cc.  (Maybe more than one?)
+5) I made an app-specific authentication for my gmail account, which
+   seems to work...
+
+Example BattMail config file:
+:MAIL_CONFIG
+USERNAME foobar@gmail.com
+PASSWORD autogenbygoogleapppasswordgenthingie
+SERVER smtp://smtp.gmail.com:587

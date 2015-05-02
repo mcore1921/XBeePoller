@@ -1,0 +1,16 @@
+To auto-generate web pages:
+
+1) Have a web server that you can use ssh-copy-id to enable password-less
+   upload via scp.  (Oh, and do actually do the ssh-copy-id thing.)
+2) Update thermHtmlGenWork.sh.  You'll probably need to override the
+   $GENDIR and $DESTSSH variables.  You'll probably also want to copy
+   the script somewhere else, so that later git pulls don't conflict.  
+   I recommend making a ~/bin directory and putting it there.
+3) Add thermHtmlGenWork.sh to your crontab.  Something like this:
+*/15 * * * * /home/mcore/bin/thermHtmlGenWork.sh
+   Be sure to update the directory if you make a copy
+4) Update the template html files to match your web address and naming
+   scheme, so that the links at the bottom of the page are appropriate.
+5) Upload the dygraph javascript file to your server.
+
+That's it!

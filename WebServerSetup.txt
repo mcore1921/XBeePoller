@@ -1,0 +1,175 @@
+Some notes about setting up a web server on the rpi
+
+To be cleaned up later...
+
+
+https://www.pestmeester.nl/
+Which is saved to pestmeester.nl.html here.
+
+************************
+**** FIREWALL RULES ****
+************************
+
+First set up firewall rules.  Put the following (minus the --- at the top and
+bottom) into /etc/iptables.firewall.rules.  Be sure the file is owned by root
+ -- best to make the file with sudo (i.e. sudo nano <filename>).
+------
+*filter
+
+#  Allow all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
+-A INPUT -i lo -j ACCEPT
+-A INPUT -d 127.0.0.0/8 -j REJECT
+
+#  Accept all established inbound connections
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+#  Allow all outbound traffic - you can modify this to only allow certain traffic
+-A OUTPUT -j ACCEPT
+
+#  Allow HTTP and HTTPS connections from anywhere (the normal ports for websites and SSL).
+-A INPUT -p tcp --dport 80 -j ACCEPT
+-A INPUT -p tcp --dport 443 -j ACCEPT
+
+#  Allow SSH connections
+#  The -dport number should be the same port number you set in sshd_config
+-A INPUT -p tcp -m state --state NEW --dport 22 -j ACCEPT
+
+#  Allow ping
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+#  Log iptables denied calls
+-A INPUT -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
+
+#  Drop all other inbound - default deny unless explicitly allowed policy
+-A INPUT -j DROP
+-A FORWARD -j DROP
+
+COMMIT
+------
+
+Then load them in manualy to check that the formatting is right:
+> sudo iptables-restore < /etc/iptables.firewall.rules
+
+Check that the rules exist:
+> sudo iptables -L
+
+Then configure so these rules are set on boot:
+> sudo nano /etc/network/if-pre-up.d/firewall
+Contents should be (again leave out the ---)
+------
+#!/bin/sh
+/sbin/iptables-restore < /etc/iptables.firewall.rules
+------
+Then set permissions:
+> sudo chmod +x /etc/network/if-pre-up.d/firewall
+
+
+**************************
+**** WEB SERVER SETUP ****
+**************************
+
+> sudo apt-get install nginx
+
+I'm skipping all the stuff about increased security and using gzip
+and whatnot.  Also skipping PHP.
+
+> sudo mkdir -p /data/localsite/www
+> sudo mkdir -p /data/localsite/logs
+> sudo chown -R www-data:www-data /data/localsite/
+
+
+> cd /etc/nginx/sites-available/
+> sudo cp default localsite
+> sudo ln -s /etc/nginx/sites-available/localsite /etc/nginx/sites-enabled/localsite
+> sudo rm /etc/nginx/sites-enabled/default 
+
+Now we edit settings for localsite.
+> sudo nano /etc/nginx/sites-available/localsite
+
+Update appropriate lines to say:
+
+  root /data/localsite/www;
+  index index.php index.html index.htm;
+  server_name localsite;
+
+Then add (below server_name):
+
+        error_log /data/localsite/logs/error.log error;
+        access_log /data/localsite/logs/access.log;
+
+Lastly, start the service.
+> sudo /etc/init.d/nginx start
+
+Now you should be able to bring the page up from another machine...
+
+*****************************
+**** MAKING THE PHP PAGE ****
+*****************************
+
+For some reason an update was required before this worked...
+
+> sudo apt-get update
+> sudo apt-get install php5-fpm
+
+Now, add this block as a separate location block inside server.  Add it
+after location /doc/ {} block. Again, skip the ---'s.
+> sudo nano /etc/nginx/sites-available/localsite
+
+-----
+location ~ [^/].php(/|$) {
+    fastcgi_split_path_info ^(.+?.php)(/.*)$;
+    fastcgi_pass unix:/var/run/php5-fpm.sock;
+    fastcgi_index index.php;
+    include fastcgi_params;
+}
+-----
+
+Finally, create an index.php for testing. 
+> sudo nano /data/localsite/www/index.php
+-----
+<?php phpinfo(); ?>
+-----
+
+Go load the page and see a bunch of php stuff.
+
+If that doesn't work, try editing php5-fpm config:
+> sudo nano /etc/php5/fpm/pool.d/www.conf
+1) Comment the listen = 127.0.0.1:9000 line, and replace with:
+listen = /var/run/php5-fpm.sock
+2) Uncomment the following 3 lines:
+listen.owner = www-data
+listen.group = www-data
+listen.mode = 0660
+3) Restart php and nginx
+> sudo service php5-fpm restart
+> sudo service nginx restart
+
+Then try again...
+
+
+Now we'll make our specific PHP page.
+Replace the contents of index.php with the following:
+----------
+<html>
+  <head>
+    <meta http-equiv="refresh" content="1">
+    <meta http-equiv="expires" content="-1">
+  </head>
+  <body>
+  <pre>
+<?
+ob_start();
+include '/var/tmp/xbcfg.out';
+$s = ob_get_clean();
+print $s;
+?>
+  </pre>
+  </body>
+</html>
+----------
+
+Then be sure to set its permissions:
+> sudo chown www-data:www-data /data/localsite/www/index.php
+
+That appears to be all it takes!  I'm not sure what happens on a restart,
+though...
