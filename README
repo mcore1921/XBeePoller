@@ -23,7 +23,7 @@ Now, inside mysql:
 > cd htmlgen; ./install.sh install <prefix for web pages>
 > cd ../battmail; ./install.sh install
 
-6) Set up the config files.  These are in /etc/XBeeConfig.
+6) Set up the config files.  These are in /etc/XBeeThermClient.
 
 That's the RPi part.  For the hardware part:
 1) Configure an XBee in API mode using X-CTU.  Also set a PanID at this time.
