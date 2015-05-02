@@ -3,31 +3,46 @@ Text used to generate the art is below.
 
 ---------------------------------------
 
-Basic class relationship:
+Basic class diagram
 
 @startuml
 
-title Relationships - Class Diagram
+title Relationships 
 
-class main
-class XBeeConfigManager
-class MessageHandler
-class PortService
-class SQLConnector
+class DataManager
+class XBeeCommManager
 
 package SQL <<database>> {
   class db
 }
 
-main *-- PortService
-main *-- MessageHandler
-XBeeConfigManager -down-* MessageHandler
-MessageHandler *-- SQLConnector
+package XBee <<node>> {
+  class Device
+}
+
+package XBeeManagers <<frame>> {
+  abstract class XBeeUnitManager
+  class CoordinatorManager
+  class RemoteXBeeManager {
+    One RemoteXBeeManager
+    per remote sensor device
+  }
+}  
+
+CoordinatorManager -up-> XBeeUnitManager
+RemoteXBeeManager -up-> XBeeUnitManager
+XBeeCommManager *-- PortService
+XBeeCommManager *-- MessageFactory
+XBeeCommManager -- XBeeManagers
+XBeeManagers -down- DataManager
+DataManager *-- SQLConnector
 SQLConnector *-- SQL
+PortService -down- XBee
 
 Hide members 
-Hide main circle
 Hide db circle
+Hide Device circle
+show RemoteXBeeManager fields
 
 @enduml
 
@@ -35,61 +50,50 @@ Hide db circle
 
 I/O Sequence Diagram:
 
+
 @startuml
 
-title "I/O from XBee into SQL"
+title "I/O from XBee"
 
 actor XBeePort
 
-Box "UART Thread"
+Box "XBeeCommManager\nThread"
+  participant XBeeCommManager
   participant PortService
-  participant main
   participant MessageFactory
 end box
 
-XBeePort --> PortService : UART
-PortService --> main : inputQueue
-main --> MessageFactory
-main <-- MessageFactory : IOSample 
-main --> MessageHandler : IOSample over inputQueue
-MessageHandler --> SQLConnector
-database SQL
-SQLConnector --> SQL
-
-@enduml
-
----------------------------------------
-
-Configuration Sequence Diagram:
-@startuml
-
-title "XBee Configuration Management"
-
-actor XBeePort
-
-Box "UART Thread"
-  participant PortService
-  participant main as main1
-  participant MessageFactory
+Box "Handler's\nThread"
+  participant RegisteredHandler
+  participant DataManager
+  participant SQLConnector
 end box
-participant main as main2
 
-== Incoming Messages ==
+Note over DataManager
+  DataManager and SQLConnector are
+  thread-safe; called from many threads
+end note
+
 XBeePort --> PortService : UART
-PortService --> main1 
-main1 --> MessageFactory
-main1 <-- MessageFactory : (Message*)
-main1 --> main2 : inputQueue
-main2 --> MessageHandler
-MessageHandler --> XBeeConfigManager
-main1 <-- XBeeConfigManager : sendQueue
-XBeePort <-- main1 : write to port
+PortService --> MessageFactory : Create Message
+PortService <-- MessageFactory : Message
+PortService --> RegisteredHandler : Message over\nthreadQueue
+RegisteredHandler --> RegisteredHandler : Process Message
 
-== Asynchronous Queries ==
+alt IO Sample
 
-main2 --> XBeeConfigManager : heartbeat
-main1 <-- XBeeConfigManager : sendQueue
-XBeePort <-- main1
+    RegisteredHandler --> DataManager : update DB
+    DataManager --> SQLConnector : update DB
+    SQLConnector --> MySQL
+
+else Config 
+
+    XBeeCommManager <-- RegisteredHandler : Message over\nthreadQueue
+    PortService <-- XBeeCommManager
+    XBeePort <-- PortService : write() to port
+
+end
 
 @enduml
+
 
