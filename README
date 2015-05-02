@@ -1,34 +1,53 @@
 So you want to make a new config?  Here's the overview if you're using 
 a Raspberry Pi 2
 
-1) Configure an XBee in API mode.  See XBeeConfig.txt.  Hook it up to the 
-   RPI2 - +3.3v, ground, TXD, and RXD.  Configure raspberry pi so the 
-   TXD/RXD pins aren't providing a terminal, but are instead available 
-   as a /dev/tty.  I'm pretty sure raspi-config can do this.
-2) Build the code.  See NewRpiConfig.txt for a list of packages you'll need.  
-   Keep running Make and figure out the dependencies - everything's in 
-   there but the Makefile isn't very advanced.
-3) Make a new MySQL database and set it up with the config.  See SQLNotes.txt.
-4) Set up a ~/.XBeeThermPollerConfig/XBeeThermPollerConfig file.  
-   Example below.
-5) Set up at least one remote station for testing.  Again see XBeeConfig.txt.
-6) Run thermPoller --port=/dev/ttyXXXX, replacing XXXX for the right port.  
-   On Raspberry Pi, it's typically /dev/ttyAMA0.
-   You can also set the default port in the config file so you don't have
-   to pass it as an arg. Add the following:
-:PROCESS_CONFIG
-PORTNAME /dev/ttyAMA0
-7) Calibrate the remote station.  See Calibration.txt for details.
-8) Set up cron job for webpage creation. See htmlgen/README for details.
-9) Set up cron job for battery failure notification.  See battmail/README
-   for details.
+1) Set up your Rpi2.  See NewRpiConfig.txt for detailed instructions.
+2) Set up a database.  Use the default names if you don't want to 
+   figure out the config files.
 
-Example contents of a XBeeThermPollerConfig file:
-:SENSORS
-00-13-a2-00-40-a8-36-49 HallwayThermostat
-00-13-a2-00-40-8b-0f-64 MattsDesktop
-00-13-a2-00-40-8b-0f-9f BackPorch
-00-13-a2-00-40-a7-3f-32 Nursery
-00-13-a2-00-40-a7-3f-28 MasterBedroom
-00-13-a2-00-40-a7-3f-22 Garage
-00-13-a2-00-40-b1-81-e0 Kegerator
+From shell:
+> mysql -u root -p
+
+Now, inside mysql:
+>create database therm;
+>create user 'xbtherm'@'localhost' identified by 'therm';
+>grant all privileges on therm.* to 'xbtherm'@'%';
+>quit
+
+3) Get this repo onto the rpi2.
+4) Build the code.
+> make; cd htmlgen; make; cd ../battmail; make
+
+5) Install the code.  You may need to sudo these...
+> ./install.sh install <username to run the service as>
+> cd htmlgen; ./install.sh install <prefix for web pages>
+> cd ../battmail; ./install.sh install
+
+6) Set up the config files.  These are in /etc/XBeeConfig.
+
+That's the RPi part.  For the hardware part:
+1) Configure an XBee in API mode using X-CTU.  Also set a PanID at this time.
+   This is the ID that allows multiple ZigBee networks in the same area;
+   just choose one at random, but be sure to set the same one for all your
+   units.
+2) Set up at least one remote station for testing.  You can use router
+   or endpoint firmware - easiest to just leave the default firmware on
+   your XBee (which is router).  The only parameter you need to set is the
+   PAN ID.  You can do this directly from the RPI by connecting the remote
+   to the configuration you set in (1) and doing the following:
+   2a) In one shell, run:
+       cat -A /dev/ttyAMA0
+   2b) In a second shell, run the following.  Don't wait more than ~10
+       seconds between each step or the XBee will switch back to non-config
+       mode.
+       > echo -ne "+++" > /dev/ttyAMA0
+       After about a second you should see "OK" printed to the first shell
+       Then, in the second shell, run the following, subbing your pan ID
+       (in hex) for the XX:
+       > echo -ne "ATIDXX\r\nATID\r\n" > /dev/ttyAMA0
+       YOu should see an "OK" and then an echo back of the ID you set.
+       Lastly, write the ID config to non-volatile memory:
+       > echo -ne "ATWR\r\n" > /dev/ttyAMA0
+       Now you can pop out the XBee and move on
+3) Calibrate the remote station.  See Calibration.txt for details.
+
