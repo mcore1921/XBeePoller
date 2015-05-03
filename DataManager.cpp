@@ -1,6 +1,5 @@
 #include "DataManager.h"
 
-#include "SQLConnector.h"
 #include "SQLConnectorB.h"
 #include "util.h"
 
@@ -15,13 +14,11 @@
 DataManager::DataManager(ConfigFile cf)
   : m_config(cf)
 {
-  m_pSqlConnector = new SQLConnector(cf);
   m_pSqlConnectorB = new SQLConnectorB(cf);
 }
 
 DataManager::~DataManager()
 {
-  delete m_pSqlConnector;
   delete m_pSqlConnectorB;
 }
 
@@ -41,44 +38,6 @@ int DataManager::handleIOSample(std::vector<unsigned char> address,
 				double degF)
 {
   std::lock_guard<std::recursive_mutex> g(m_SQLMutex);
-  // Open a stack layer to make sure variables don't pollute
-  // across the two methods in here
-/*
-  {
-
-    std::string serno = macAddrString(address);
-
-    if (m_pSqlConnector->testSensorName(serno) != 0)
-    {
-      std::cout << DMLOG << " (" << __FILE__ << ":" << __LINE__ << ")"
-		<< "Sensor does not exist; creating: " 
-		<< serno << std::endl;
-      m_pSqlConnector->makeSensorName(serno);
-    }
-
-    std::string locationName = m_config.getParam("SENSORS", serno, "UNKNOWN");
-    if (locationName == "UNKNOWN")
-    {
-      std::cout << DMLOG << " (" << __FILE__ << ":" << __LINE__ << ")"
-		<< "Location for sensor " << serno 
-		<< " is not in config file; not entering data." << std::endl;
-      return -1;
-    }
-    else if (m_pSqlConnector->testLocationName(locationName))
-    {
-      std::cout << DMLOG << " (" << __FILE__ << ":" << __LINE__ << ")"
-		<< "Location does not exist; creating: " 
-		<< locationName << std::endl;
-      m_pSqlConnector->makeLocationName(locationName);
-    }
-
-    timeval tv;
-    gettimeofday(&tv, NULL);
-    m_pSqlConnector->putVal(serno, locationName, 
-			    tv.tv_sec, value);
-  }
-*/
-  // Now the new way...
   {
     // Open a stack layer for the guard
     std::lock_guard<std::recursive_mutex> g(m_thermMapMutex);
