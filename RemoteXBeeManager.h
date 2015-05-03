@@ -91,7 +91,8 @@ private:
 
   ConfigFile m_config;
   std::string m_name;
-  double m_sensorCal;
+  double m_sensorGainCal;
+  double m_sensorOffsetCal;
   int m_lastAIOSample;
   unsigned char m_frameId;
   int m_writeCounter;

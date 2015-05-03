@@ -31,9 +31,13 @@ RemoteXBeeManager::RemoteXBeeManager(XBeeCommManager* pCommManager,
 			     macAddrString(m_address),
 			     "UNKNOWN");
 
-  m_sensorCal = m_config.getParam("CALIBRATIONS",
-				  macAddrString(m_address),
-				  1.0);
+  m_sensorGainCal = m_config.getParam("CALIBRATIONS_GAIN",
+				      macAddrString(m_address),
+				      1.0);
+  m_sensorOffsetCal = m_config.getParam("CALIBRATIONS_OFFSET",
+					macAddrString(m_address),
+					0.0);
+
 
   m_lastAIOSample = 0;
   m_frameId = 0;
@@ -76,18 +80,20 @@ std::string RemoteXBeeManager::paramsDescriptionString()
   std::stringstream os;
   // Dump sensor config parameters and status
   
-  double degC = (((double)m_lastAIOSample 
+  double degC = ((((double)m_lastAIOSample 
 		  * 1000.0 / 1023.0 * 1.2) 
-		 - 500.0) * 0.1 * m_sensorCal;
+		  - 500.0) * 0.1 * m_sensorGainCal) 
+    + m_sensorOffsetCal;
   double degF = (degC * 9.0 / 5.0) + 32;
   os << macAddrString(m_address) << " " 
      << std::fixed << std::setw(8) << std::setfill('0') << std::right 
      << std::setprecision(3)
      << tvdiff(tvnow, m_lastReceiveTime) << " "
      << m_initStatus << " "
-     << std::setw(3) << std::setfill(' ') << (int) m_frameId << " "
      << m_writeCounter << " "
-     << m_sensorCal << " "
+     << std::setw(3) << std::setfill(' ') << (int) m_frameId << " "
+     << std::setw(6) << m_sensorGainCal << " "
+     << std::setw(6) << m_sensorOffsetCal << " "
      << std::setw(3) << std::setfill(' ') << m_lastAIOSample << " "
      << "(" << std::setprecision(1) << std::setfill(' ') << std::right
      << std::setw(5) << degC << " C) (" 
@@ -493,9 +499,10 @@ void RemoteXBeeManager::drainMessages()
 	std::cout << RXBMLOG << " sample " << std::dec
 		  << pSample->getAnalogValue() << std::endl;
 	// Compute the degF
-	double degC = (((double)pSample->getAnalogValue() 
+	double degC = ((((double)pSample->getAnalogValue() 
 			* 1000.0 / 1023.0 * 1.2) 
-		       - 500.0) * 0.1 * m_sensorCal;
+			- 500.0) * 0.1 * m_sensorGainCal)
+	  + m_sensorOffsetCal;
 	double degF = (degC * 9.0 / 5.0) + 32;
 
 	m_pDataManager->handleIOSample(m_address,
