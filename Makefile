@@ -17,7 +17,7 @@ LIBS     += -lboost_program_options
 LIBS     += -lmysqlcppconn-static -lmysqlclient
 
 OBJS      = main.o
-OBJS     += SQLConnectorB.o
+OBJS     += SQLConnector.o
 OBJS     += DataManager.o
 OBJS     += util.o
 OBJS     += Config.o

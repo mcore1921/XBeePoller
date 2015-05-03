@@ -1,6 +1,6 @@
 #include "DataManager.h"
 
-#include "SQLConnectorB.h"
+#include "SQLConnector.h"
 #include "util.h"
 
 #include <iostream>
@@ -14,12 +14,12 @@
 DataManager::DataManager(ConfigFile cf)
   : m_config(cf)
 {
-  m_pSqlConnectorB = new SQLConnectorB(cf);
+  m_pSqlConnector = new SQLConnector(cf);
 }
 
 DataManager::~DataManager()
 {
-  delete m_pSqlConnectorB;
+  delete m_pSqlConnector;
 }
 
 void DataManager::activate()
@@ -152,7 +152,7 @@ void DataManager::threadFunc()
       }
       m_thermEntries.push_back(ss.str());
 
-      m_pSqlConnectorB->putVals(now, vals);
+      m_pSqlConnector->putVals(now, vals);
       // We've processed the data for this time chunk; now clear it
       m_thermMap.clear();
     }

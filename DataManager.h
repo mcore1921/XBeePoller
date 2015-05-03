@@ -9,7 +9,7 @@
 #include <mutex>
 #include <thread>
 
-class SQLConnectorB;
+class SQLConnector;
 
 class DataManager
 {
@@ -34,7 +34,7 @@ private:
   
   int secUntilNextWake(int intervalInMinutes);
 
-  SQLConnectorB* m_pSqlConnectorB;
+  SQLConnector* m_pSqlConnector;
   std::recursive_mutex m_SQLMutex;
   ConfigFile m_config;
 

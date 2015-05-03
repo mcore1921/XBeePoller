@@ -2,6 +2,7 @@ So you want to make a new config?  Here's the overview if you're using
 a Raspberry Pi 2
 
 1) Set up your Rpi2.  See NewRpiConfig.txt for detailed instructions.
+
 2) Set up a database.  Use the default names if you don't want to 
    figure out the config files.
 
@@ -15,6 +16,7 @@ Now, inside mysql:
 >quit
 
 3) Get this repo onto the rpi2.
+
 4) Build the code.
 > make; cd htmlgen; make; cd ../battmail; make
 
@@ -24,6 +26,15 @@ Now, inside mysql:
 > cd ../battmail; ./install.sh install
 
 6) Set up the config files.  These are in /etc/XBeeThermClient.
+
+7) Start the service
+> sudo service thermPollerInit start
+
+8) Monitor the status
+   You can monitor status of the running thermPoller by either:
+   8a) watch -n 1 /var/tmp/xbcfg.out
+   8b) browsing to your rpi from a web browser.  The default page is
+       a mirror of /var/tmp/xbcfg.out.
 
 That's the RPi part.  For the hardware part:
 1) Configure an XBee in API mode using X-CTU.  Also set a PanID at this time.

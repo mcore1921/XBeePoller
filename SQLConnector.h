@@ -1,5 +1,5 @@
-#ifndef _SQL_CONNECTOR_B_H_INCLUDED_
-#define _SQL_CONNECTOR_B_H_INCLUDED_
+#ifndef _SQL_CONNECTOR_H_INCLUDED_
+#define _SQL_CONNECTOR_H_INCLUDED_
 
 #include "Config.h"
 
@@ -12,11 +12,11 @@ class Driver;
 class Connection;
 }
 
-class SQLConnectorB
+class SQLConnector
 {
 public:
-  SQLConnectorB(ConfigFile cf);
-  virtual ~SQLConnectorB();
+  SQLConnector(ConfigFile cf);
+  virtual ~SQLConnector();
 
   int putVals(long int time,
 	      const std::vector<std::pair<std::string, double>>& vals);

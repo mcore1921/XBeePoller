@@ -1,4 +1,4 @@
-#include "SQLConnectorB.h"
+#include "SQLConnector.h"
 #include "util.h"
 
 #include "cppconn/driver.h" 
@@ -12,7 +12,7 @@
 
 #define SQLLOG std::setprecision(3) << std::fixed << dtime() << " SQLB:"
 
-SQLConnectorB::SQLConnectorB(ConfigFile cf)
+SQLConnector::SQLConnector(ConfigFile cf)
 {
   m_config = cf;
   m_pDriver = get_driver_instance();
@@ -34,132 +34,12 @@ SQLConnectorB::SQLConnectorB(ConfigFile cf)
   m_pConnection->setSchema(database);
 }
 
-SQLConnectorB::~SQLConnectorB()
+SQLConnector::~SQLConnector()
 {
   delete m_pConnection;
 }
 
-/*
-int SQLConnectorB::testSensorName(std::string sensorName)
-{
-  {
-    std::stringstream ss;
-    ss << "SELECT * from sensors";
-    std::unique_ptr<sql::Statement> pStatement(m_pConnection->createStatement());
-    std::unique_ptr<sql::ResultSet> pResults(pStatement->executeQuery(ss.str()));
-    
-    pResults->beforeFirst();
-    while (pResults->next())
-    {
-      if (pResults->getString("address") == sensorName)
-	return 0;
-    }
-  }
-  return -1;
-}
-
-int SQLConnectorB::makeSensorName(std::string sensorName)
-{
-  std::stringstream ss;
-  ss << "INSERT INTO sensors (address) VALUES (\"" << sensorName << "\");";
-  std::unique_ptr<sql::Statement> pStatement(m_pConnection->createStatement());
-  bool result = pStatement->execute(ss.str());
-  if (!result)
-    return -1;
-  
-  return 0;
-}
-
-int SQLConnectorB::testLocationName(std::string locationName)
-{
-  {
-    std::stringstream ss;
-    ss << "SELECT * from locations";
-    std::unique_ptr<sql::Statement> pStatement(m_pConnection->createStatement());
-    std::unique_ptr<sql::ResultSet> pResults(pStatement->executeQuery(ss.str()));
-
-    pResults->beforeFirst();
-    while (pResults->next())
-    {
-      if (pResults->getString("name") == locationName)
-	return 0;
-    }
-  }
-  return -1;
-}
-  
-int SQLConnectorB::makeLocationName(std::string locationName)
-{
-  std::stringstream ss;
-  ss << "INSERT INTO locations (name) VALUES (\"" << locationName << "\");";
-  std::unique_ptr<sql::Statement> pStatement(m_pConnection->createStatement());
-  bool result = pStatement->execute(ss.str());
-  if (!result)
-    return -1;
-  
-  return 0;
-}
-*/
-/*
-int SQLConnectorB::putTemperature(float temperature, std::string sensor, std::string location)
-{
-  std::stringstream ss;
-  ss << "INSERT INTO therm (time, temperature, loc_id, sensor_id) "
-     << "VALUES ( NOW(), " << temperature << ", "
-     << "( SELECT loc_id FROM loc WHERE location LIKE \'" << location << "\'), "
-     << "( SELECT sensor_id FROM sensor WHERE sensor LIKE \'" << sensor << "\'));";
-
-  std::cout << dtime() << " (" << __FILE__ << ":" << __LINE__ << ")"
-	    << "Adding temperature: " << temperature 
-	    << ", sensor: " << sensor
-	    << ", location: " << location << std::endl;
-
-  mysqlpp::Query q = m_pConnection->query(ss.str());
-  bool result = q.exec();
-  
-  if (!result)
-    return -1;
-
-  return 0;
-}
-
-*/
- /*
-int SQLConnectorB::putVal(std::string sensor,
-			  std::string location,
-			  long int time, 
-			  int value)
-{
-  struct tm* t = localtime(&time);
-  char buf[50];
-  snprintf(buf, 50, "%04d-%02d-%02d %02d:%02d:%02d",
-	   t->tm_year+1900, t->tm_mon+1, t->tm_mday,
-	   t->tm_hour, t->tm_min, t->tm_sec);
-
-  std::stringstream ss;
-  ss << "INSERT INTO readings (sensor, location, time, value) "
-     << "VALUES ( " 
-     << " (SELECT id FROM sensors WHERE address = '" << sensor << "'),"
-     << " (SELECT id FROM locations WHERE name = '" << location << "'),"
-     << "'" << buf << "',"
-     << value << ")";
-
-  if (m_config.getParam("SQL_CONNECTOR", "DEBUG_OUTPUT", 0) != 0)
-  {
-    std::cout << dtime() << " (" << __FILE__ << ":" << __LINE__ << ")"
-	      << "Adding: " << ss.str() << std::endl;
-  }
-
-  std::unique_ptr<sql::Statement> pStatement(m_pConnection->createStatement());
-  bool result = pStatement->execute(ss.str());
-  if (!result)
-    return -1;
-
-  return 0;
-}
- */
-
-int SQLConnectorB::putVals(long int time,
+int SQLConnector::putVals(long int time,
 	      const std::vector<std::pair<std::string, double>>& vals)
 {
   // If there are no values, bomb immediately
@@ -205,7 +85,7 @@ int SQLConnectorB::putVals(long int time,
   return 0;
 }
 			   
-bool SQLConnectorB::doesTableExist(std::string tableName)
+bool SQLConnector::doesTableExist(std::string tableName)
 {
   std::stringstream ss;
   ss << "show tables;";
@@ -221,7 +101,7 @@ bool SQLConnectorB::doesTableExist(std::string tableName)
   return false;
 }
 
-int SQLConnectorB::createTable(std::string tableName,
+int SQLConnector::createTable(std::string tableName,
 			      const std::vector<std::string>& colNames)
 {
   if (colNames.size() == 0)
@@ -277,7 +157,7 @@ int SQLConnectorB::createTable(std::string tableName,
   return 0;
 }
 
-bool SQLConnectorB::doTableColumnsWork(std::string tableName, 
+bool SQLConnector::doTableColumnsWork(std::string tableName, 
 				   const std::vector<std::string>& colNames)
 {
   std::stringstream ss;
@@ -308,7 +188,7 @@ bool SQLConnectorB::doTableColumnsWork(std::string tableName,
   return true;
 }
 
-int SQLConnectorB::makeTableColumnsWork(std::string tableName, 
+int SQLConnector::makeTableColumnsWork(std::string tableName, 
 				   const std::vector<std::string>& colNames)
 {
   std::stringstream ss;
@@ -356,7 +236,7 @@ int SQLConnectorB::makeTableColumnsWork(std::string tableName,
   return 0;
 }
 
-int SQLConnectorB::addRow(std::string tableName,
+int SQLConnector::addRow(std::string tableName,
 			  long int time,
 		 const std::vector<std::pair<std::string, double>>& vals)
 {
@@ -404,17 +284,3 @@ int SQLConnectorB::addRow(std::string tableName,
 
 }
 
-
-/*
-int SQLConnectorB::checkConnection()
-{
-  if (m_pConnection->ping())
-  {
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
-}
-*/

@@ -86,9 +86,9 @@ std::string RemoteXBeeManager::paramsDescriptionString()
      << tvdiff(tvnow, m_lastReceiveTime) << " "
      << m_initStatus << " "
      << std::setw(3) << std::setfill(' ') << (int) m_frameId << " "
+     << m_writeCounter << " "
      << m_sensorCal << " "
      << std::setw(3) << std::setfill(' ') << m_lastAIOSample << " "
-     << m_writeCounter << " "
      << "(" << std::setprecision(1) << std::setfill(' ') << std::right
      << std::setw(5) << degC << " C) (" 
      << std::setw(5) << degF << " F) "
