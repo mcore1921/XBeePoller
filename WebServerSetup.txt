@@ -101,6 +101,7 @@ Lastly, start the service.
 > sudo /etc/init.d/nginx start
 
 Now you should be able to bring the page up from another machine...
+Of course, there's no page yet, so there's no point trying.
 
 *****************************
 **** MAKING THE PHP PAGE ****
@@ -129,6 +130,10 @@ Finally, create an index.php for testing.
 -----
 <?php phpinfo(); ?>
 -----
+
+Stop and restart the service:
+> sudo /etc/init.d/nginx stop
+> sudo /etc/init.d/nginx start
 
 Go load the page and see a bunch of php stuff.
 
@@ -168,7 +173,7 @@ print $s;
 </html>
 ----------
 
-Then be sure to set its permissions:
+Then be sure to set its permissions (though this may not be necessary):
 > sudo chown www-data:www-data /data/localsite/www/index.php
 
 That appears to be all it takes!  I'm not sure what happens on a restart,
