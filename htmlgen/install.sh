@@ -23,6 +23,8 @@ if [ "$1" = "install" ]; then
     sudo mkdir -p /etc/XBeeThermClient
     sudo cp -p ./template_dg.html /etc/XBeeThermClient
     sudo cp -p ./template_gchart.html /etc/XBeeThermClient
+    sudo perl -pi -e "s/current/$webname/" /etc/XBeeThermClient/template_dg.html
+    sudo perl -pi -e "s/current/$webname/" /etc/XBeeThermClient/template_gchart.html
 
     crontab -l | grep -v "thermHtmlGenWork.sh" | crontab -
     cronline="*/15 * * * * /usr/local/bin/XBeeThermClient/thermHtmlGenWork.sh"
