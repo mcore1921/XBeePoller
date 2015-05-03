@@ -37,10 +37,11 @@ Now, inside mysql:
        a mirror of /var/tmp/xbcfg.out.
 
 That's the RPi part.  For the hardware part:
-1) Configure an XBee in API mode using X-CTU.  Also set a PanID at this time.
-   This is the ID that allows multiple ZigBee networks in the same area;
-   just choose one at random, but be sure to set the same one for all your
-   units.
+1) Configure an XBee in API Coordinator mode using X-CTU.  Also set a PanID 
+   at this time.  This is the ID that allows multiple ZigBee networks in 
+   the same area; choose one at random, but be sure to set the same one 
+   for all your units.
+
 2) Set up at least one remote station for testing.  You can use router
    or endpoint firmware - easiest to just leave the default firmware on
    your XBee (which is router).  The only parameter you need to set is the
@@ -60,5 +61,22 @@ That's the RPi part.  For the hardware part:
        Lastly, write the ID config to non-volatile memory:
        > echo -ne "ATWR\r\n" > /dev/ttyAMA0
        Now you can pop out the XBee and move on
-3) Calibrate the remote station.  See Calibration.txt for details.
+
+3) Start up the thermPoller and watch the configuration.  It will take
+   ~5-10 minutes for the master to reconfigure the remote completely;
+   you can tell this has happenned when the "write" column of the 
+   monitor page increments.  (Currently this is the 5th column of the
+   line whos first column is the MAC of your remote XBee.)
+   3a) You can reduce this time (~10x) by reducing the remote GET and SET 
+       timeout in /etc/XBeeThermClient/XBeeThermPollerConfig.  Add the 
+       following to the end of the file.  It's probably fine to leave these 
+       parameters forever, but the XBee datasheets suggest different values 
+       (which are the defaults).  Don't forget to restart the service after 
+       you change the configfile.
+
+:REMOTE_XBEE_MGR_CONFIG
+SET_PARAM_TIMEOUT 30
+GET_PARAM_TIMEOUT 30
+
+4) Calibrate the remote station.  See Calibration.txt for details.
 
