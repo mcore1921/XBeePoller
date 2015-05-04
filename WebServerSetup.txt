@@ -6,9 +6,10 @@ Some notes about setting up a web server on the rpi
 2) Get php stuff
 > sudo apt-get update
 > sudo apt-get install php5-fpm
-3) Run the script 
+3) Get the repo into your local rpi (if you haven't already)
+4) Run the script 
 > sudo ./webSetup.sh
-4) Check the webpage the script mentions.
+5) Check the webpage the script mentions.
 
 
 DONE!
