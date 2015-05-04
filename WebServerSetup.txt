@@ -1,10 +1,22 @@
 Some notes about setting up a web server on the rpi
 
-To be cleaned up later...
+
+1) Get nginx
+> sudo apt-get install nginx
+2) Get php stuff
+> sudo apt-get update
+> sudo apt-get install php5-fpm
+3) Run the script 
+> sudo ./webSetup.sh
+4) Check the webpage the script mentions.
 
 
-https://www.pestmeester.nl/
-Which is saved to pestmeester.nl.html here.
+DONE!
+
+OR: Do the script steps manually.  See below.
+
+These steps poached from https://www.pestmeester.nl/
+(Which is saved to pestmeester.nl.html here.)
 
 ************************
 **** FIREWALL RULES ****
