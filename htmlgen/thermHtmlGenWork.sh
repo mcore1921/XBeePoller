@@ -11,6 +11,7 @@ GCBASEFN="current"
 
 GEN="thermHtmlGen"
 TMPDIR="/var/tmp"
+#TMPDIR="/data/localsite/www"
 SCP="/usr/bin/scp"
 
 $GENDIR/$GEN --template=$DFDIR/$GCTMPLT > $TMPDIR/$GCBASEFN.html

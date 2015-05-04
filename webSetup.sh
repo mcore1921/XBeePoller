@@ -45,6 +45,7 @@ fi
 sudo mkdir -p /data/localsite/www
 sudo mkdir -p /data/localsite/logs
 sudo chown -R www-data:www-data /data/localsite/
+sudo chmod -R g+w /data/localsite/
 
 sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/localsite
 sudo ln -s /etc/nginx/sites-available/localsite /etc/nginx/sites-enabled/localsite

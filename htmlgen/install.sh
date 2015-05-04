@@ -30,6 +30,12 @@ if [ "$1" = "install" ]; then
     cronline="*/15 * * * * /usr/local/bin/XBeeThermClient/thermHtmlGenWork.sh"
     (crontab -l; echo "$cronline") | crontab -
 
+    if [ -e "/data/localsite/www" ]; then
+        sudo cp -p ./dygraph-combined.js /data/localsite/www
+	sudo perl -pi -e 's/(TMPDIR=\"\/var\/tmp\")/\#$1/' /usr/local/bin/XBeeThermClient/thermHtmlGenWork.sh
+	sudo perl -pi -e 's/#(TMPDIR=\"\/data\/localsite\/www\")/$1/' /usr/local/bin/XBeeThermClient/thermHtmlGenWork.sh
+    fi
+    
 elif [ "$1" = "uninstall" ]; then
     
     echo "uninstalling"
