@@ -87,7 +87,7 @@ sudo apt-get install libboost-dev
 sudo apt-get install libboost-program-options-dev
 sudo apt-get install cmake
 sudo apt-get install libcurl4-openssl-dev
-sudo apt-get install mysql-server  (rpi root password)
+sudo apt-get install mysql-server  (don't forget the pass you pick)
 J) Next set up the web server.  This is big enough that it calls
    for its own file.  See WebServerSetup.txt.
 
