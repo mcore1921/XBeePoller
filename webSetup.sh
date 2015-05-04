@@ -75,8 +75,8 @@ else
 <?
 ob_start();
 include '/var/tmp/xbcfg.out';
-$s = ob_get_clean();
-print $s;
+\$s = ob_get_clean();
+print \$s;
 ?>
   </pre>
   </body>
