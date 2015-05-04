@@ -79,7 +79,7 @@ H) Set up nptd
     to
 server ntp.timeserver.com
  2) Use the following to instantly set the time
-   > sudo nano -qg
+   > sudo ntpd -qg
 I) Load the necessary packages. Use the following:
 sudo apt-get update
 sudo apt-get install libmysql++-dev
