@@ -80,6 +80,9 @@ private:
 
   void drainMessages();
 
+  double calibratedDegC(int analogValue);
+  double calibratedDegF(int analogValue);
+
   std::vector<unsigned char> m_address;
   DataManager* m_pDataManager;
   HandlerQueue m_incomingQueue;

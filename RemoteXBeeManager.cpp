@@ -33,10 +33,10 @@ RemoteXBeeManager::RemoteXBeeManager(XBeeCommManager* pCommManager,
 
   m_sensorGainCal = m_config.getParam("CALIBRATIONS_GAIN",
 				      macAddrString(m_address),
-				      1.0);
+				      0.1173);
   m_sensorOffsetCal = m_config.getParam("CALIBRATIONS_OFFSET",
 					macAddrString(m_address),
-					0.0);
+					-50.0);
 
 
   m_lastAIOSample = 0;
@@ -80,11 +80,8 @@ std::string RemoteXBeeManager::paramsDescriptionString()
   std::stringstream os;
   // Dump sensor config parameters and status
   
-  double degC = ((((double)m_lastAIOSample 
-		  * 1000.0 / 1023.0 * 1.2) 
-		  - 500.0) * 0.1 * m_sensorGainCal) 
-    + m_sensorOffsetCal;
-  double degF = (degC * 9.0 / 5.0) + 32;
+  double degC = calibratedDegC(m_lastAIOSample);
+  double degF = calibratedDegF(m_lastAIOSample);
   os << macAddrString(m_address) << " " 
      << std::fixed << std::setw(8) << std::setfill('0') << std::right 
      << std::setprecision(3)
@@ -499,11 +496,7 @@ void RemoteXBeeManager::drainMessages()
 	std::cout << RXBMLOG << " sample " << std::dec
 		  << pSample->getAnalogValue() << std::endl;
 	// Compute the degF
-	double degC = ((((double)pSample->getAnalogValue() 
-			* 1000.0 / 1023.0 * 1.2) 
-			- 500.0) * 0.1 * m_sensorGainCal)
-	  + m_sensorOffsetCal;
-	double degF = (degC * 9.0 / 5.0) + 32;
+	double degF = calibratedDegF(m_lastAIOSample);
 
 	m_pDataManager->handleIOSample(m_address,
 				       pSample->getAnalogValue(),
@@ -519,4 +512,23 @@ void RemoteXBeeManager::drainMessages()
     }
   } while (1);
 
+}
+
+double RemoteXBeeManager::calibratedDegC(int analogValue)
+{
+  // Note: see Calibration.txt for an overview of a more
+  // nominal approach to conersion from analog values to
+  // temperatures.
+
+  double c = (double)analogValue * m_sensorGainCal + m_sensorOffsetCal;
+
+  return c;
+}
+
+double RemoteXBeeManager::calibratedDegF(int analogValue)
+{
+  double c = calibratedDegC(analogValue);
+  double f = c * 9.0 / 5.0;
+  f += 32.0;
+  return f;
 }
