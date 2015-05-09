@@ -1,62 +1,125 @@
-Short answer:
+A tool for calibration is provided in the calibration subdir.
 
-To update calibration, change the sensors table in the mysql
-database.  Do something like:
-mysql> update sensors set calibration = 0.98 where id = 1;
+For each sensor, collect several analog readings along with
+"true" temperatures associated with the readings.  Then construct
+an input file for the calibration program - an example is provided,
+and more detail is printed when the calibration program is run
+with no argument.
 
-Also, if you want the watch file to have correct calibrations,
-add something like this to your XBeeThermPollerConfig, where
-the mac matches the mac of the associated XBee and the value is
-a from below.
-:CALIBRATIONS
-00-13-a2-00-40-a8-36-49 1.034
-00-13-a2-00-40-8b-0f-64 1.000
+The resulting output can be directly pasted into the XBeeThermPollerConfig
+configuration file.
+
+Note the nominal values for gain and offset are:
+gain: 0.1173
+offset: -50
+
+The general purpose calculation to convert from analog values to degrees
+celsius is as follows:
+
+C = x * 1000/1023 * 1.2 * 0.1 - 50
+
+         ||||||
+The analog input is converted by a 10-bit ADC, so to convert to a percent
+of the reference value one must scale down from 2^10/1000.
+
+                    |||
+The reference value for the intended model of XBee is 1.2v
+
+                          |||
+The resulting value is between 0 and 1200, and provides mV of analog
+input.  The TMP36 specified that 1 degree celsius corresponds to 10mV.
+Multipling by 0.1 scales from mV to 10-mV increments, matching this scale.
+
+                                |||
+The TMP36 is designed to provide 500mV at 0 degrees C. 
+
+------------------------------------------------
+
+So, to solve for gain and offset:
+x1 = analog value measured by sensor
+Tn = true temperature (determined here by average)
+
+|x1, 1||a|=|T1|
+|x2, 1||b|=|T2|
+
+Ax=B
+
+Inv(A)*Ax=Inv(A)*B
+
+Cheat sheet:
+
+Inv(A) when A is 2x2 matrix: 
+|a b|    1/(ad-bc)* |d -b|
+|c d| =             |-c a|
 
 
-Formula for gain (solving for a, C=degrees celsius, x=analog reading):
-  a = C/(0.1173x - 50)
+Inv(A)*T = gain, offset
 
 
-Detailed calibration overview:
+-----------------------------------------------
 
-Calibration scalar is applied in mysql scripts as part of conversion
-from raw sample readings (readings table) to averaged readings
-(thermdata table).  The formula, for an analog value X, is:
-celsius = ((x*1000.0/1023.0*1.2)-500)*0.1*cal_scalar
-
-From the TMP36 datasheet, we expect 10 mvDC of signal for each degree C.
-
-The XBee ADC is against a fixed 1.2v internal reference, so saturated
-on that input would be 1.2v.  It's a 10-bit ADC, so 0=0 and 1023 = max.
-So, to find the volts for a value x from the ADC:
-   mV = (x*1000/1023*1.2)
-Multiply by 1000/1023 to normalize for the 10-bit ADC, and the resulting
-value is 1000 * a percentage of the reference voltage of 1.2v.
-Multiply by 1.2 and you have a raw voltage reading, in mV.
-The TMP36's offset is such that at 500mV it is 0 degrees C.
-The TMP36's gain is 10mV per degree C.
-So:
-   C = (mv-500)*0.1
-   C = ((x*1000/1023*1.2)-500)*0.1
-If we assume that the offset doesn't need calibration (no reason
-to assume this, the datasheet doesn't appear to give guidance)
-then we can simply add a gain calibration a thusly:
-   C = ((x*1000/1023*1.2)-500)*0.1*a
-I don't think this is the best way to do things, but at least it will
-cause all the sensors to agree at typical room temperature.
-
-The calibration scalar is stored in the mysql sensors table.  It's tied
-to the MAC of the XBee on a board.  Logically it would be better tied
-to the board itself, as that's what is being calibrated, but we don't
-have enough information to know what that is.
+Some user-specific notes below.
 
 
+2015-05-03, 12:05pm, again all with 1.000 calibration scalar, but in
+                     what I believe to be a more uniform temperature area
+select round(avg(t82),1) as t82, 
+       round(avg(t83),1) as t83, 
+       round(avg(t87),1) as t87, 
+       round(avg(t8e),1) as t8e, 
+       round(avg(t9c),1) as t9c, 
+       round(avg(ta4),1) as ta4 
+ from temperatures order by id desc limit 250;
 
-Calibration data for specific units:
-2015-05-01, in the kegerator, all with 1.000 calibration scalar
-00-13-a2-00-40-d8-6a-82 32.9
-00-13-a2-00-40-d8-6a-83 32.5
-00-13-a2-00-40-d4-a4-87 31.7
-00-13-a2-00-40-d4-a4-8e 31.5
-00-13-a2-00-40-e4-3c-9c 32.1
-00-13-a2-00-40-da-e0-a4 32.0
++------+------+------+------+------+------+
+| t82  | t83  | t87  | t8e  | t9c  | ta4  |
++------+------+------+------+------+------+
+| 34.7 | 36.0 | 34.2 | 34.7 | 34.9 | 34.9 |
++------+------+------+------+------+------+
+1 row in set (0.01 sec)
+
+Woops, that averaged everything in the table... trying again:
+Row 813 (2015-05-02-22:00)through 957 (2015-05-03-10:00)
+select round(avg(t82),1) as t82, 
+       round(avg(t83),1) as t83, 
+       round(avg(t87),1) as t87, 
+       round(avg(t8e),1) as t8e, 
+       round(avg(t9c),1) as t9c, 
+       round(avg(ta4),1) as ta4 
+ from temperatures where id >= 813 and id <= 957;
++------+------+------+------+------+------+
+| t82  | t83  | t87  | t8e  | t9c  | ta4  |
++------+------+------+------+------+------+
+| 32.6 | 35.2 | 32.3 | 33.5 | 33.9 | 33.4 |
++------+------+------+------+------+------+
+1 row in set (0.00 sec)
+
+Row 1995 (2015-05-07 01:00) through 2127 (2015-05-07 12:00)
+select round(avg(t82),1) as t82, 
+       round(avg(t83),1) as t83, 
+       round(avg(t87),1) as t87, 
+       round(avg(t8e),1) as t8e, 
+       round(avg(t9c),1) as t9c, 
+       round(avg(ta4),1) as ta4 
+ from temperatures where id >= 1995 and id <= 2127;
++------+------+------+------+------+------+
+| t82  | t83  | t87  | t8e  | t9c  | ta4  |
++------+------+------+------+------+------+
+| 67.5 | 69.2 | 65.3 | 66.4 | 66.4 | 66.8 |
++------+------+------+------+------+------+
+1 row in set (0.01 sec)
+
+:CALIBRATIONS_GAIN
+00-13-a2-00-40-e4-3c-9c 1.029
+00-13-a2-00-40-da-e0-a4 1.002
+00-13-a2-00-40-d4-a4-8e 1.017
+00-13-a2-00-40-d4-a4-87 1.014
+00-13-a2-00-40-d8-6a-82 0.958
+00-13-a2-00-40-d8-6a-83 0.984
+:CALIBRATIONS_OFFSET
+00-13-a2-00-40-e4-3c-9c -0.262
+00-13-a2-00-40-da-e0-a4 0.045
+00-13-a2-00-40-d4-a4-8e -0.023
+00-13-a2-00-40-d4-a4-87 0.655
+00-13-a2-00-40-d8-6a-82 0.505
+00-13-a2-00-40-d8-6a-83 -0.925
