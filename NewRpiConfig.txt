@@ -1,6 +1,111 @@
 
+NEW UPDATE for RPI 3 using 2017-03-02-raspbian-jessie:
+A) put raspbian on the sdcard.  I found a tool called "Etcher" 
+   to make this easy. https://etcher.io/ .  I've also successfully used
+   Win32DiskImager.
 
-FROM SCRATCH:
+B) Configure the raspbian so it works headless.
+ 1) Wifi by creating wpa_supplicant.conf in the root of the /boot partition.
+    - Be sure this uses unix-style line endings.
+    - Skeleton contents of the file are as simple as:
+
+network={
+    ssid="YOUR_SSID"
+    psk="YOUR_PASSWORD"
+    key_mgmt=WPA-PSK
+}
+
+ 2) Enable SSH.  This is as simple as placing a file named 'ssh' into the 
+    root of the /boot partition.  Contents don't matter.
+ 3) Set static IP address, OR somehow discover the DHCP address.  
+  3a) To scan, try nmap -sn 192.168.0.0/24 from a linux boot somewhere.  
+      (Of course sub out the first 3 numbers of 192.168.0 for your address)
+      You may have to do this twice, once with and once without the rpi on, 
+      and look for a difference.  This also worked well:
+> nmap -sn 192.168.0.0/24 | grep pi
+  3b) To set it static... I dunno.  Look it up in google or something.
+ 4) Turn off serial port.
+    Remove any "console=ttyAMA0,XXX" or "console=serial0,XXX" entried in
+    /boot/cmdline.txt
+C) SSH in.  Username pi, password raspberry.
+
+D) Update packages. 
+sudo apt-get update
+sudo apt-get -y upgrade
+sudo reboot
+
+E) Set up rasp pi settings - condensed version.  See below for more details
+sudo systemctl set-default multi-user.target
+sudo ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+sudo cp /usr/share/zoneinfo/US/Pacific-New /etc/localtime
+
+F) Make yourself a new user / pass / etc
+sudo useradd xbtherm
+sudo mkdir /home/xbtherm
+sudo chown xbtherm.xbtherm /home/xbtherm
+sudo usermod -a -G dialout xbtherm
+sudo usermod -a -G gpio xbtherm
+sudo usermod -a -G www-data xbtherm
+sudo usermod -a -G sudo xbtherm
+sudo passwd xbtherm
+
+G) Change the password of the pi user already
+sudo passwd pi
+
+VALIDATE FROM HERE DOWN
+H) Load the necessary packages. Use the following:
+sudo apt-get update
+sudo apt-get -y install libmysql++-dev libboost-dev libboost-program-options-dev cmake libcurl4-openssl-dev git mysql-server
+     (don't forget the pass you pick)
+
+I) Next set up the web server.  This is big enough that it calls
+   for its own file.  See WebServerSetup.txt.
+
+--- EXPANDED DISCUSSION OF SETTING UP RPI SETTINGS ---
+
+E) Set up rasp pi settings.
+> sudo raspi-config
+ 1) Boot options - Desktop / CLI - choose B1 Console, requiring user to login
+ 2) Interfacing Options - P6 Serial - Disable login shell and disable serial port
+ 3) SKIP THIS STEP - it seems to corrupt a bunch of stuff.
+    Localization Options - Change Locale. Uncheck en_GB.UTF-8.  
+    Check en_US.UTF-8.  Pick en_US.UTF-8 as default language.
+ 4) Localization Options - Set timezone.  Figure this out yourself.
+ 5) Finish and reboot.
+
+E OPTIONAL (works on rpi3 at least?)
+0) Condensed all below to something you can copy/paste into a command line
+sudo systemctl set-default multi-user.target
+sudo ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+// SKIP THESE TWO - they seem to corrupt perl or something
+// sudo update-locale LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
+// sudo locale-gen en_US.UTF-8
+sudo cp /usr/share/zoneinfo/US/Pacific-New /etc/localtime
+
+1) Boot to console:
+sudo systemctl set-default multi-user.target
+sudo ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+2) Set serial port
+(Note you can skip this step if you did it above before you first booted the pi)
+sudo sed -i /boot/cmdline.txt -e "s/console=ttyAMA0,[0-9]\+ //"
+sudo sed -i /boot/cmdline.txt -e "s/console=serial0,[0-9]\+ //"
+(And, if it was ever enabled, you should remove the "enable_uart" line from /boot/config.txt)
+You'll need to reboot after this for the serial settings to take effect.
+3) Set Locale
+sudo update-locale LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
+sudo locale-gen en_US.UTF-8
+4) Set timezone
+sudo cp /usr/share/zoneinfo/US/Pacific-New /etc/localtime
+
+
+--------------------------------
+
+
+FROM SCRATCH (older version):
 A) put raspbian on the sdcard.  (all this is tested with 
    2015-02-16-raspbian-wheezy)
 B) Use the standard rpi-config that comes up on first boot to: 
