@@ -1,0 +1,4 @@
+create database therm;
+create user 'xbtherm'@'localhost' identified by 'therm';
+grant all privileges on therm.* to 'xbtherm'@'%';
+quit

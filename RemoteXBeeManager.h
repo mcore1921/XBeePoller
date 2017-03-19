@@ -9,6 +9,7 @@
 #include "XBeeUnitManager.h"
 
 #include <thread>
+#include <mutex>
 #include <map>
 
 class XBeeCommManager;

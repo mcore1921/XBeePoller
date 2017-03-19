@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <chrono>
 #include <sstream>
+#include <unistd.h>
 
 #define DMLOG std::setprecision(3) << std::fixed << dtime() << " DM:" 
 
