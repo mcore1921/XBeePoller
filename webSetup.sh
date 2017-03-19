@@ -51,9 +51,14 @@ sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/localsite
 sudo ln -s /etc/nginx/sites-available/localsite /etc/nginx/sites-enabled/localsite
 sudo rm /etc/nginx/sites-enabled/default 
 
+sudo perl -pi -e "s/(^\s+)root \/var.*$/\troot \/data\/localsite\/www\;/" /etc/nginx/sites-available/localsite
+sudo perl -pi -e "s/(^\s+)index index.html index.htm index.nginx-debian.html\;/\tindex index.php index.html index.htm\;/" /etc/nginx/sites-available/localsite
+sudo perl -pi -e "s/(^\s+)server_name _\;/\tserver_name localsite\;\n\terror_log \/data\/localsite\/logs\/error.log error\;\n\taccess_log \/data\/localsite\/logs\/access.log\;/" /etc/nginx/sites-available/localsite
+
 sudo perl -pi -e "s/(^\s+)root \/usr.*$/\troot \/data\/localsite\/www\;/" /etc/nginx/sites-available/localsite
 sudo perl -pi -e "s/(^\s+)index index.html index.htm\;/\tindex index.php index.html index.htm\;/" /etc/nginx/sites-available/localsite
 sudo perl -pi -e "s/(^\s+)server_name localhost\;/\tserver_name localsite\;\n\terror_log \/data\/localsite\/logs\/error.log error\;\n\taccess_log \/data\/localsite\/logs\/access.log\;/" /etc/nginx/sites-available/localsite
+
 sudo perl -pi -e 'print "\tlocation ~ [^/].php(/|\$\) {
 \t\tfastcgi_split_path_info ^(.+?.php)(/.*)\$\;
 \t\tfastcgi_pass unix:/var/run/php5-fpm.sock;
@@ -62,6 +67,13 @@ sudo perl -pi -e 'print "\tlocation ~ [^/].php(/|\$\) {
 \t}
 
 " if (/^\s+# Only for nginx-naxsi used with.*$/)' /etc/nginx/sites-available/localsite
+
+sudo perl -pi -e 'print "\tlocation ~ \\.php\$ {
+\t\tinclude snippets/fastcgi-php.conf;
+\t\tfastcgi_pass unix:/var/run/php5-fpm.sock;
+\t}
+
+" if (/^\s+# pass the PHP scripts to FastCGI server .*$/)' /etc/nginx/sites-available/localsite
 
 if [ -e "/data/localsite/www/index.php" ]; then
   echo "/data/localsite/www/index.php already exists; skipping this step"
@@ -73,7 +85,7 @@ else
   </head>
   <body>
   <pre>
-<?
+<?php
 ob_start();
 include '/var/tmp/xbcfg.out';
 \$s = ob_get_clean();
