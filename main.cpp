@@ -115,7 +115,7 @@ int main(int argc, char** argv)
   // Start up our objects (use a helper thread for this)
   std::thread starterThread(&activateManagers, 
 			    &coordinatorManager,
-			    remoteManagers);
+			    std::ref(remoteManagers));
   starterThread.detach();
 
   // Start our (infinite) config file dumping loop
