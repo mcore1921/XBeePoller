@@ -60,7 +60,10 @@ sudo apt-get update
 sudo apt-get -y install libmysql++-dev libboost-dev libboost-program-options-dev cmake libcurl4-openssl-dev git mysql-server
      (don't forget the pass you pick)
 
-I) Next set up the web server.  This is big enough that it calls
+I) If you're running a rpi3, you need to disable bluetooth to use the full uart
+sudo -c 'echo "dtoverlay=pi3-disable-bt" >> /boot/config.txt'
+
+J) Next set up the web server.  This is big enough that it calls
    for its own file.  See WebServerSetup.txt.
 
 --- EXPANDED DISCUSSION OF SETTING UP RPI SETTINGS ---
